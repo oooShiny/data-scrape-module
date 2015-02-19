@@ -1,0 +1,235 @@
+<?php
+
+/**
+ *  Implements hook_node_postinsert().
+ *  Creates associated team nodes by scraping the ESPN site when a league node
+ *  is created.
+ */
+function data_scrape_node_postinsert($node) {
+  if ( $node->type == 'league' ) {
+     create_teams($node);
+  }
+}
+
+/**
+ *  The main function that brings everything together. Creates teams from ESPN
+ *  data.
+ */
+function create_teams($node) {
+  // get ESPN league ID from League node
+  $leagueid = $node->field_espn_league_id['und'][0]['value'];
+  // get years from homepage select box so we can get historical data
+  $years = get_league_years($leagueid);
+  // scrape history from ESPN pages
+  $team_history = scrape_history($leagueid, $years);
+  // scrape the current standings for each team
+  $team_standings = scrape_current($leagueid);
+
+  // let's create some nodes!
+  foreach($team_standings as $id => $team){
+
+    $team_node = new stdClass(); // Create a new node object
+    $team_node->type = "team"; // Or page, or whatever content type you like
+    node_object_prepare($team_node); // Set some default values
+
+    $team_node->title    = $team['name'];
+    $team_node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+
+    global $user;
+
+    $team_node->uid = $user->uid; // UID of the author of the node
+
+    // populate fields with content from ESPN scrape
+    $team_node->field_team_owner['und'][0]['value'] = $team['owner'];
+    $team_node->field_team_id['und'][0]['value'] = $id;
+    $team_node->field_team_wins['und'][0]['value'] = $team['wins'];
+    $team_node->field_team_losses['und'][0]['value'] = $team['losses'];
+    $team_node->field_team_ties['und'][0]['value'] = $team['ties'];
+    $team_node->field_team_points_for['und'][0]['value'] = $team['pf'];
+    $team_node->field_team_points_against['und'][0]['value'] = $team['pa'];
+    $team_node->field_team_streak['und'][0]['value'] = $team['streak'];
+
+    if($team_node = node_submit($team_node)) { // Prepare node for saving
+      node_save($team_node);
+      module_load_include('inc', 'entity', 'includes/entity.controller');
+      foreach($team_history as $old_year => $this_team){
+          $values = array(
+            'field_name' => 'field_historical_stats',
+            'field_historical_year' => array(
+              LANGUAGE_NONE => array(array('value' => $old_year)),
+            ),
+            'field_historical_owner' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['team_owner'])),
+            ),
+            'field_historical_team_name' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['team_name'])),
+            ),
+            'field_historical_wins' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['wins'])),
+            ),
+            'field_historical_losses' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['losses'])),
+            ),
+            'field_historical_ties' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['ties'])),
+            ),
+            'field_historical_points_for' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['pf'])),
+            ),
+            'field_historical_points_against' => array(
+              LANGUAGE_NONE => array(array('value' => $this_team[$id]['pa'])),
+            ),
+          );
+          $entity = entity_create('field_collection_item', $values);
+          $entity->setHostEntity('node', $team_node);
+          $entity->save();
+        }
+
+      assign_to_group($team_node, $node);
+    }
+
+  }
+}
+
+function scrape_current($leagueid) {
+  $standings = array();
+  $url = 'http://games.espn.go.com/ffl/standings?leagueId=' . $leagueid;
+  // scrape HTML from ESPN league standings page
+  $html = drupal_http_request($url);
+  // split string on each standings table
+  $tables = preg_split( '/<table (.*) class="tableBody" /', $html->data );
+  foreach($tables as $table) {
+    if(strpos( $table, 'DOCTYPE HTML PUBLIC' ) !== FALSE) {
+      // skip this one
+    }elseif(strpos($table, '<td colspan="6">') !== FALSE) {
+      // grab all rows from the table
+      $rows = preg_split('/<tr class="tableBody" bgcolor=#(.{6})>/', $table);
+      $colspan = 6;
+    }else {
+      $rows    = preg_split('/<tr class="(odd|even)Row bodyCopy sortableRow">/', $table);
+      $colspan = 7;
+    }
+      foreach($rows as $row){
+        if(strpos( $row, 'tableHead' ) !== FALSE) {
+          // skip header row
+        }else{
+          if($colspan == 6){
+            // break apart HTML to get pertinent information
+            $data = preg_split('/<a title="/', $row);
+            $split = explode('"', $data[1]);
+            // format data
+            $team_link = explode('&amp;', $split[2]);
+            $team_id = explode('=', $team_link[1]);
+            $id = $team_id[1];
+            $team_info = explode('(', $split[0]);
+            $wins = explode('>', $split[7]);
+            $losses = explode('>', $split[9]);
+            $ties = explode('>', $split[11]);
+            // store team info in standings array
+            $standings[$id]['name'] = rtrim($team_info[0]);
+            $standings[$id]['owner'] = rtrim($team_info[1], ')');
+            $standings[$id]['wins'] = rtrim($wins[1], '</td' );
+            $standings[$id]['losses'] = rtrim($losses[1], '</td' );
+            $standings[$id]['ties'] = rtrim($ties[1], '</td' );
+          }elseif($colspan == 7) {
+            $data = preg_split('/<td align="right" class="sortable(.{2,6})">/', $row);
+            $team_link = explode('&amp;', $data[0]);
+            $team_id = explode('=', $team_link[1]);
+            $id = $team_id[1];
+            $standings[$id]['pf'] = rtrim($data[1], '</td>');
+            $standings[$id]['pa'] = rtrim($data[2], '</td>');
+            $streak = explode('>', $data[6]);
+            $standings[$id]['streak'] = rtrim($streak[1], '</td');
+          }
+
+      }
+    }
+  }
+return $standings;
+}
+
+/*
+ * Scrape ESPN Final Standings pages for each year the league has been active
+ * (which we get from the get_league_years() function). Returns an array with
+ * all of the historical data for us with which we can create field collections
+ * for each team.
+ */
+
+function scrape_history($leagueid, $years) {
+	$history = array();
+	// go through each year and get final standings
+	foreach($years as $year) {
+		$url = 'http://games.espn.go.com/ffl/tools/finalstandings?leagueId=' . $leagueid . '&seasonId=' . $year;
+		// scrape HTML from ESPN league standings page
+		$html = drupal_http_request( $url );
+		// pull out the standings table from the HTML code
+		$break = preg_split( '/<table .* id="finalRankingsTable" .* /', $html->data );
+		// pull out each row of the table, save in array
+		$table = preg_split( '/<tr class="sortableRow .*>/', $break[1] );
+
+		foreach ( $table as $row ) {
+			if ( strpos( $row, 'FINAL LEAGUE STANDINGS' ) !== FALSE ) {
+				// skip first row (table column headings)
+			} else {
+				$cells                         = preg_split( '/<td .*?>/', $row );
+				$team_info                     = explode( '"', $cells[2] );
+				$team_name                     = explode( '(', $team_info[1] );
+				$team_owner                    = rtrim( $team_name[1], ')' );
+              $team_id                       = explode( '&amp;', $team_info[3] );
+              $id = substr( $team_id[1], 7 );
+
+              $history[ $year ][$id]['team_name'] = $team_name[0];
+              $history[ $year ][$id]['team_owner'] = $team_owner;
+
+				$record                     = explode( '-', $cells[5] );
+				$history[ $year ][$id]['wins']   = ltrim( $record[4], '>' );
+				$history[ $year ][$id]['losses'] = str_replace( "</td>\n", '', $record[5] );
+				$history[ $year ][$id]['ties']   = ( $record[6] ? str_replace( "</td>\n", '', $record[6] ) : '0' );
+
+				$history[ $year ][$id]['pf'] = str_replace( "</td>\n", '', $cells[6] );
+				$history[ $year ][$id]['pa'] = str_replace( "</td>\n", '', $cells[7] );
+			}
+		}
+	}
+	return $history;
+}
+
+/*
+ * Scrape ESPN schedule page to get games
+ */
+function scrape_schedule($league_id, $year) {
+  $games = array();
+  $url = 'http://games.espn.go.com/ffl/schedule?leagueId='.$league_id.'&seasonId='.$year;
+  $html = drupal_http_request($url);
+  //TODO: Scrape schedule and save games as an array
+}
+
+/*
+ * Scrape ESPN homepage for the Year selection dropdown. This will give us
+ * an array with the years the league has been active.
+ */
+function get_league_years($league_id) {
+  $url = 'http://games.espn.go.com/ffl/leagueoffice?leagueId='.$league_id;
+  // scrape HTML from ESPN league homepage
+  $html = drupal_http_request($url);
+  // get the select box with prior years in it
+  $select = preg_split('/<select/', $html->data);
+  $years = array();
+  if(array_key_exists(1, $select)){
+    $options = preg_split('/<option/', $select[1]);
+    unset($options[0]);
+    foreach($options AS $year) {
+      $split = preg_split('/value="/', $year);
+      $years[] = substr($split[1], 0, 4);
+    }
+  }
+  return $years;
+}
+
+/*
+ * Assign a Team node to its corresponding League (Organic Group)
+ */
+function assign_to_group($node, $gid) {
+  $values = array('entity_type' => 'node', 'entity' => $node, 'field_name' => 'og_group_ref');
+  $result = og_group('node', $gid, $values);
+}

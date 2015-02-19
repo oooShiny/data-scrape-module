@@ -1,0 +1,5 @@
+name = PHP Parser
+machine name = parser
+description = Scrapes and Parses HTML
+version = 1
+files[php][] = simple_html_dom.php
