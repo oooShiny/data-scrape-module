@@ -1,6 +1,316 @@
 <?php
 
 /**
+ * Implements hook_permission().
+ */
+function data_scrape_permission() {
+  return array(
+    'Refresh Data' => array(
+      'title' => t('Refresh League Data'),
+      'description' => t('User can access the Data Refresh button that will
+      scrape any new data from their ESPN league.'),
+    ),
+    'Scrape Games' => array(
+      'title' => t('Scrape Game Data'),
+      'description' => t('User can access the Game Data button that will
+      scrape all game data from their ESPN league schedule page(s).'),
+    ),
+    'Scrap Players' => array(
+      'title' => t('Scrape Player Data'),
+      'description' => t('User can access the Player Data button that will
+      scrape all player data from their ESPN league games.'),
+    ),
+  );
+}
+
+function data_scrape_menu() {
+
+  $items['admin/scrape/test'] = array(
+    'title' => 'Testing Scrape',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('data_scrape_game_form'),
+    'access callback' => TRUE,
+  );
+  $items['admin/scrape/matchup-builder'] = array(
+    'title' => 'Get Teams from League',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('data_scrape_matchups_form'),
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+/*
+ * The form that initiates the scraping of the league schedules to get the
+ * game nodes for a league.
+ */
+function data_scrape_game_form($form, &$form_state) {
+  // Get ESPN league ID from current (league) node.
+  $args = arg();
+  $node = node_load($args[1]);
+  $league = $node->field_espn_league_id['und'][0]['value'];
+  $form = array();
+
+  $form['selected'] = array(
+    '#type' => 'hidden',
+    '#options' => $leagues,
+    '#description' => t('Choose the league from which you want to pull games in.'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Get Game Data'),
+  );
+
+  return $form;
+}
+
+/**
+ * Form for choosing two teams to do a matchup analysis that will be displayed
+ * in a block on the league homepage.
+ */
+function data_scrape_matchups_form($form, &$form_state) {
+  $form = array();
+  // Get all the teams for this league so we can build select drop downs.
+  $args = arg();
+  $node = node_load($args[1]);
+  $league = $node->field_espn_league_id['und'][0]['value'];
+  $teams = get_teams_from_league_id($league);
+  $team_array = array();
+  foreach($teams as $team) {
+    $team_array[$team->nid] = $team->title;
+  }
+
+  // Show data if we've got the league ID (because we'll have the team IDs too).
+  if (!empty($form_state['values']['league'])) {
+    // Bring in reinforcements to handle the matchup logic.
+    module_load_include('inc', 'data_scrape', 'data_scrape.matchups');
+    $result = matchup_builder($form_state['values']['team1'], $form_state['values']['team2'], $form_state['values']['league']);
+
+    // Display the form in case the user wants to pick different teams.
+    $form['team1'] = array(
+      '#type' => 'select',
+      '#title' => t('First Team'),
+      '#options' => $team_array,
+    );
+    $form['team2'] = array(
+      '#type' => 'select',
+      '#title' => t('Second Team'),
+      '#options' => $team_array,
+    );
+    $form['league'] = array(
+      '#type' => 'hidden',
+      '#value' => $league,
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Get Matchup Data'),
+    );
+
+    // Display the form data from the previous form submission, because that's
+    // why we're here, right?
+
+    $display = format_results($result);
+
+    $form['submission'] = array(
+      '#markup' => $display,
+    );
+  }
+  else {
+    // There's no league ID submitted yet, so show the form.
+    $form['team1'] = array(
+      '#type' => 'select',
+      '#title' => t('First Team'),
+      '#options' => $team_array,
+    );
+    $form['team2'] = array(
+      '#type' => 'select',
+      '#title' => t('Second Team'),
+      '#options' => $team_array,
+    );
+    $form['league'] = array(
+      '#type' => 'hidden',
+      '#value' => $league,
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Get Matchup Data'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Add a submit handler/function to the form.
+ *
+ * This will add a completion message to the screen when the
+ * form successfully processes
+ */
+function data_scrape_matchups_form_submit($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+}
+
+function data_scrape_game_form_submit($form, &$form_state)
+{
+  // get years to scrape from node id of selected group
+  //TODO: store year the league was established to save us some scraping
+  $league = node_load($form['selected']['#value']);
+  $years = get_league_years($league->field_espn_league_id['und'][0]['value']);
+
+  // go through each year and scrape the schedule
+  foreach($years as $year) {
+    data_scrape_get_schedule($league->field_espn_league_id['und'][0]['value'], $year, $form['selected']['#value']);
+  }
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function data_scrape_block_info() {
+  $blocks['team_schedule'] = array(
+    // The name that will appear in the block list.
+    'info' => t('Team Schedule Block'),
+    // Default setting.
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  $blocks['matchup_builder'] = array(
+    'info' => t('Matchup Builder Block'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  $blocks['scrape_schedule'] = array(
+    'info' => t('Scrape Schedule Block'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function data_scrape_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    // Matchup Builder Block View
+    case 'matchup_builder':
+      $block['subject'] = t('Matchup Builder');
+      $block['content'] = drupal_render(drupal_get_form('data_scrape_matchups_form'));
+      break;
+
+    // Team Schedule Block View
+    case 'team_schedule':
+      $block['subject'] = t('Team Schedule');
+
+      $team = node_load(arg(1));
+      $league = node_load($team->og_group_ref['und'][0]['target_id']);
+      $league_id = $league->field_espn_league_id['und'][0]['safe_value'];
+      $league_og = $team->og_group_ref['und'][0]['target_id'];
+      $team_id = $team->field_team_id['und'][0]['value'];
+
+      $block['content'] = '<table><thead><tr><th>Week</th><th>Home</th><th>Score</th><th>Away</th></tr></thead><tbody>';
+      $gamelist = get_games($team_id, $league_id, $league_og);
+      foreach($gamelist as $season => $weeklist) {
+        $block['content'] .= '<tr colspan=4><td>'.$season.'</td></tr>';
+        ksort($weeklist);
+        foreach($weeklist as $week => $game) {
+          $block['content'] .= '<tr class="'.$game['result'].'"><td>'.$week.'</td>';
+          $block['content'] .= '<td>'.$game['home'].'</td>';
+          $block['content'] .= '<td>'.$game['homescore'].' - '.$game['awayscore'].'</td>';
+          $block['content'] .= '<td>'.$game['away'].'</td></tr>';
+        }
+      }
+      $block['content'] .= '</tbody></table>';
+      break;
+
+    // Scraping Schedule Button Block View
+    case 'scrape_schedule':
+      $block['subject'] = 'Get Schedule Data';
+      $block['content'] = drupal_render(drupal_get_form('data_scrape_game_form'));
+      break;
+  }
+  return $block;
+}
+
+
+/*
+ * Get all games that a team has participated in.
+ * $team_id: the ESPN team ID
+ * $league_id: the ESPN league ID
+ * $league_og: the Drupal organic group node ID
+ */
+function get_games($team_id, $league_id, $league_og) {
+  $games = array();
+  $teams = array();
+  // get all of the teams in the league
+  $league_teams = db_query("SELECT n.title, og.gid, t.field_team_id_value FROM node n
+    LEFT JOIN og_membership og ON og.etid = n.nid
+    LEFT JOIN field_data_field_team_id t ON t.entity_id = n.nid
+    WHERE n.type = 'team'
+    AND og.gid = :gid", array(':gid' => $league_og));
+
+  foreach($league_teams as $team) {
+    $teams[$team->field_team_id_value] = $team->title;
+  }
+
+  // get home games
+  $homegames = db_select('games', 'g')
+    ->fields('g')
+    ->condition('g.league', $league_id,'=')
+    ->condition('g.home', $team_id, '=')
+    ->orderBy('season', 'DESC')
+    ->orderBy('week', 'ASC')
+    ->execute();
+
+  // get away games
+  $awaygames = db_select('games', 'g')
+    ->fields('g')
+    ->condition('g.league', $league_id,'=')
+    ->condition('g.away', $team_id, '=')
+    ->orderBy('season', 'DESC')
+    ->orderBy('week', 'ASC')
+    ->execute();
+
+  // add home games to the master list
+  foreach($homegames as $game) {
+    $games[$game->season][$game->week]['home'] = $teams[$game->home].' ('.$game->home.')';
+    $games[$game->season][$game->week]['homescore'] = $game->homescore;
+    $games[$game->season][$game->week]['away'] = $teams[$game->away].' ('.$game->away.')';
+    $games[$game->season][$game->week]['awayscore'] = $game->awayscore;
+
+    if($game->homescore > $game->awayscore) {
+      $games[$game->season][$game->week]['result'] = 'win';
+    }
+    elseif($game->homescore < $game->awayscore) {
+      $games[$game->season][$game->week]['result'] = 'loss';
+    }
+    else {
+      $games[$game->season][$game->week]['result'] = 'tie';
+    }
+  }
+
+  // add away games to the master list
+  foreach($awaygames as $game) {
+    $games[$game->season][$game->week]['home'] = $teams[$game->home].' ('.$game->home.')';
+    $games[$game->season][$game->week]['homescore'] = $game->homescore;
+    $games[$game->season][$game->week]['away'] = $teams[$game->away].' ('.$game->away.')';
+    $games[$game->season][$game->week]['awayscore'] = $game->awayscore;
+
+    if($game->homescore < $game->awayscore) {
+      $games[$game->season][$game->week]['result'] = 'win';
+    }
+    elseif($game->homescore > $game->awayscore) {
+      $games[$game->season][$game->week]['result'] = 'loss';
+    }
+    else {
+      $games[$game->season][$game->week]['result'] = 'tie';
+    }
+
+  }
+
+  return $games;
+}
+
+/**
  *  Implements hook_node_postinsert().
  *  Creates associated team nodes by scraping the ESPN site when a league node
  *  is created.
@@ -29,11 +339,11 @@ function create_teams($node) {
   foreach($team_standings as $id => $team){
 
     $team_node = new stdClass(); // Create a new node object
-    $team_node->type = "team"; // Or page, or whatever content type you like
+    $team_node->type = "team";
     node_object_prepare($team_node); // Set some default values
 
     $team_node->title    = $team['name'];
-    $team_node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+    $team_node->language = LANGUAGE_NONE;
 
     global $user;
 
@@ -197,11 +507,107 @@ function scrape_history($leagueid, $years) {
 /*
  * Scrape ESPN schedule page to get games
  */
-function scrape_schedule($league_id, $year) {
+function data_scrape_get_schedule($league_id, $year, $og_id) {
   $games = array();
   $url = 'http://games.espn.go.com/ffl/schedule?leagueId='.$league_id.'&seasonId='.$year;
   $html = drupal_http_request($url);
-  //TODO: Scrape schedule and save games as an array
+  $break = preg_split( '/<table/', $html->data );
+  $rows = preg_split('/<tr/', $break[2]);
+  $schedule = array();
+  foreach($rows as $row) {
+    if(strpos($row, '#1d7225')) {
+      $week_array = explode('</a>', $row);
+      $week = rtrim($week_array[1], "</td>\n</tr>\n");
+      // need to handle regular season different than playoffs
+      if(strpos($week, 'WEEK') !== FALSE) {
+        $week = ltrim($week, 'WEEK ');
+      }
+      else {
+        $playoff_week = explode(' ', $week);
+        $week = 'P' . $playoff_week[1];
+      }
+    }
+    if((strpos($row, '#f2f2e8') !== FALSE) || (strpos($row, '#f8f8f2') !== FALSE )) {
+     $game_array = explode('<td', $row);
+      // make sure the week isn't TBD
+      if(isset($game_array[2]) !== FALSE) {
+        // get home team id
+        $home_link = explode('&amp;', $game_array[1]);
+        if (isset($home_link[1])) {
+          $home_id = ltrim($home_link[1], 'teamId=');
+        }
+        // get away team id
+        $away_link = explode('&amp;', $game_array[4]);
+        if (isset($away_link[1])) {
+          $away_id = ltrim($away_link[1], 'teamId=');
+        }
+        // get week
+        $score_link = explode('&', $game_array[6]);
+
+        // get score, if there is one
+        if (strpos($score_link[1], 'nbsp;') === FALSE) {
+          $score_rough = explode('-', $score_link[5]);
+          $home_score  = ltrim($score_rough[0], 'version=quick">');
+          $away_score  = rtrim($score_rough[1], "</a></NOBR></td>\n</tr>\n");
+          $away_score  = rtrim($away_score, '*');
+        }
+        else {
+          $home_score = 0;
+          $away_score = 0;
+        }
+
+        // Insert game data into the database directly.
+        $nid = db_insert('games')
+          ->fields(array(
+            'home'      => $home_id,
+            'away'      => $away_id,
+            'homescore' => $home_score,
+            'awayscore' => $away_score,
+            'league'    => $league_id,
+            'season'    => $year,
+            'week'      => $week
+          ))
+          ->execute();
+      }
+//      create_game_node($league_id, $year, $week, $home_id, $away_id, $home_score, $away_score, $og_id);
+    }
+  }
+}
+
+/*
+ * {CURRENTLY UNUSED} Save each game as an actual node, which will let us save more
+ * information about it.
+ */
+function create_game_node($league, $year, $week, $home, $away, $hscore, $ascore, $og_id) {
+  $game_node = new stdClass(); // Create a new node object
+  $game_node->type = "game";
+  node_object_prepare($game_node); // Set some default values
+
+  $game_node->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+
+  global $user;
+
+  $game_node->uid = $user->uid; // UID of the author of the node
+
+  // populate fields with content from ESPN scrape
+  $game_node->field_game_league['und'][0]['target_id'] = $og_id;
+//  $game_node->field_game_league['und'][0]['value'] = $league;
+  $game_node->field_game_home_team['und'][0]['target_id'] = $home;
+  $game_node->field_game_away_team['und'][0]['target_id'] = $away;
+  $game_node->field_game_home_score['und'][0]['value'] = $hscore;
+  $game_node->field_game_away_score['und'][0]['value'] = $ascore;
+  $game_node->field_game_season['und'][0]['value'] = $year;
+
+  node_save($game_node);
+  assign_to_group($game_node, $og_id);
+}
+
+/*
+ * Scrape matchup pages to get player/position data. This data will be used for
+ * determining positional output per team/owner.
+ */
+function data_scrape_get_players($game_id) {
+  //TODO: Figure out if we can grab all player/position data per game
 }
 
 /*
@@ -215,11 +621,25 @@ function get_league_years($league_id) {
   // get the select box with prior years in it
   $select = preg_split('/<select/', $html->data);
   $years = array();
+  // If we can find the select box, go through each one to get the years.
   if(array_key_exists(1, $select)){
     $options = preg_split('/<option/', $select[1]);
     unset($options[0]);
     foreach($options AS $year) {
       $split = preg_split('/value="/', $year);
+      $years[] = substr($split[1], 0, 4);
+    }
+  } else {
+    // Can't find the select box (league probably not active for current season).
+    // Redo the scrape for last year instead.
+    $last_year = date('Y') - 1;
+    $url .= '&seasonId=' . $last_year;
+    $html = drupal_http_request($url);
+    $select = preg_split('/<select/', $html->data);
+    $options = preg_split('/<option/', $select[1]);
+    unset($options[0]);
+    foreach ($options AS $year) {
+      $split   = preg_split('/value="/', $year);
       $years[] = substr($split[1], 0, 4);
     }
   }
@@ -232,4 +652,30 @@ function get_league_years($league_id) {
 function assign_to_group($node, $gid) {
   $values = array('entity_type' => 'node', 'entity' => $node, 'field_name' => 'og_group_ref');
   $result = og_group('node', $gid, $values);
+}
+
+/*
+ * Get team info from league ID and team ID
+ */
+function get_teams_from_league_id($league_id) {
+  // get $league_nid from $league_id
+  $league_node = db_select('field_revision_field_espn_league_id', 'espn')
+    ->fields('espn', array('entity_id'))
+    ->condition('espn.field_espn_league_id_value', $league_id, '=')
+    ->execute();
+  $league_nid = $league_node->fetchField();
+
+  // find nodes where gid = $league_nid
+  $team_result = db_select('og_membership', 'og')
+    ->fields('og', array('etid'))
+    ->condition('og.gid', $league_nid, '=')
+    ->execute();
+  foreach($team_result as $team) {
+    $node = node_load($team->etid);
+    if ($node != FALSE) {
+      $teams[] = $node;
+    }
+  }
+
+  return $teams;
 }
