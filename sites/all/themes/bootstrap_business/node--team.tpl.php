@@ -30,6 +30,7 @@
       <strong>Current Record: </strong><?php print render($content['field_team_wins'][0]); ?> -
               <?php print render($content['field_team_losses'][0]); ?> -
               <?php print render($content['field_team_ties'][0]); ?><br />
+      <strong>Win Percentage: </strong><?php print render($content['field_team_win_percentage'][0]); ?>
     </div>
       <?php
 //       print render($content);
@@ -46,11 +47,17 @@
         <th>Ties</th>
         <th>Points For</th>
         <th>Points Against</th>
+        <th>Win %</th>
       </tr>
       </thead>
       <tbody>
       <?php
       $total = array();
+      $total['wins'] = 0;
+      $total['losses'] = 0;
+      $total['ties'] = 0;
+      $total['pf'] = 0;
+      $total['pa'] = 0;
 
       foreach($content['field_historical_stats']['#items'] as $history) {
         $history_field = entity_load('field_collection_item', $history);
@@ -71,6 +78,7 @@
           print '<td>' . $history_object->field_historical_ties['und'][0]['value'] . '</td>';
           print '<td>' . $history_object->field_historical_points_for['und'][0]['value'] . '</td>';
           print '<td>' . $history_object->field_historical_points_against['und'][0]['value'] . '</td>';
+//          print '<td>' . $history_object->field_win_percentage['und'][0]['value'] . '</td>';
           print '</tr>';
         }
       }
@@ -81,6 +89,7 @@
       print '<td>'.$total['ties'].'</td>';
       print '<td>'.$total['pf'].'</td>';
       print '<td>'.$total['pa'].'</td>';
+      print '<td></td>'; // win pct
       print '</tr>';
 
       ?>
