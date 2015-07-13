@@ -672,7 +672,7 @@ function get_teams_from_league_id($league_id) {
     ->execute();
   foreach($team_result as $team) {
     $node = node_load($team->etid);
-    if ($node != FALSE) {
+    if ($node != FALSE && $node->type == 'team') {
       $teams[] = $node;
     }
   }

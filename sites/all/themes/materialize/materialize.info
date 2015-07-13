@@ -1,0 +1,15 @@
+name = Materialize
+description = A Drupal theme based on the Google Material design standards.
+core = 7.x
+
+; Stylesheets
+stylesheets[all][] = css/materialize.css
+
+; Scripts
+scripts[] = js/materialize.js
+
+; Regions
+regions[header] = Header
+regions[message] = Message
+regions[content] = Content
+regions[footer] = Footer
