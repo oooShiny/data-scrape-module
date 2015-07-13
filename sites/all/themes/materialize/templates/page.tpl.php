@@ -74,25 +74,15 @@
  * @see bartik_process_page()
  * @see html.tpl.php
  */
-?>
+1==1; ?>
 <header>
-  <nav class="light-blue lighten-1 z-depth-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-
-      <ul id="nav-mobile" class="side-nav">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-    </div>
-  </nav>
+  <?php print render($page['header']['views_og_user_groups-block_1']); ?>
 </header>
 
 
 <main>
-  <div class="container">
+  <div class="container" style="padding-top: 1em">
+    <h1><?php print $title; ?></h1>
     <?php print render($page['content']); ?>
   </div>
 </main>

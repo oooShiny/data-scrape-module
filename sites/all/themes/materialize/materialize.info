@@ -3,10 +3,37 @@ description = A Drupal theme based on the Google Material design standards.
 core = 7.x
 
 ; Stylesheets
-stylesheets[all][] = css/materialize.css
+stylesheets[all][] = css/ghpages-materialize.css
 
 ; Scripts
-scripts[] = js/materialize.js
+scripts[] = js/animation.js
+scripts[] = js/buttons.js
+scripts[] = js/cards.js
+scripts[] = js/character_counter.js
+scripts[] = js/collapsible.js
+scripts[] = js/dropdown.js
+scripts[] = js/forms.js
+scripts[] = js/global.js
+scripts[] = js/hammer.min.js
+scripts[] = js/init.js
+scripts[] = js/jquery.easing.1.3.js
+scripts[] = js/jquery.hammer.js
+scripts[] = js/jquery.timeago.min.js
+scripts[] = js/leanModal.js
+scripts[] = js/materialbox.js
+scripts[] = js/parallax.js
+scripts[] = js/prism.js
+scripts[] = js/pushpin.js
+scripts[] = js/scrollFire.js
+scripts[] = js/scrollspy.js
+scripts[] = js/sideNav.js
+scripts[] = js/slider.js
+scripts[] = js/tabs.js
+scripts[] = js/toasts.js
+scripts[] = js/tooltip.js
+scripts[] = js/transitions.js
+scripts[] = js/velocity.min.js
+scripts[] = js/waves.js
 
 ; Regions
 regions[header] = Header

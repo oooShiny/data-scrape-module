@@ -159,12 +159,12 @@ function format_results($result_array) {
   $team_data[$result_array['team2id']] = $result_array['team2name'];
 
   // Print matchup team names.
-  $pretty_html = '<h2>' . $result_array['team1name'] . ' vs. ' . $result_array['team2name'] . '</h2>';
+  $pretty_html = '<h4>' . $result_array['team1name'] . ' vs. ' . $result_array['team2name'] . '</h4>';
 
   /*
    * Print overall head-to-head record and related stats.
    */
-  $pretty_html .= '<h3>All Time Statistics</h3>';
+  $pretty_html .= '<h5>All Time Statistics</h5>';
 
   // Overall record (using the first team).
   $record = $result_array['totals'][$result_array['team1id']]['wins'] . ' - ' . $result_array['totals'][$result_array['team1id']]['losses'];
