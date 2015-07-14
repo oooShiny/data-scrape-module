@@ -29,7 +29,7 @@
 </ul>
 
 <nav class="light-blue lighten-1 z-depth-1" role="navigation">
-  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
+  <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Commissioner Tools</a>
     <ul class="right hide-on-med-and-down">
       <!-- Dropdown Trigger -->
       <li><a class="dropdown-button" href="#!" data-activates="dropdown1">My Leagues<i class="material-icons right">arrow_drop_down</i></a></li>

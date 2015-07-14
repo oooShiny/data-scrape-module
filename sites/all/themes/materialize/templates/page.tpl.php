@@ -74,7 +74,7 @@
  * @see bartik_process_page()
  * @see html.tpl.php
  */
-1==1; ?>
+?>
 <header>
   <?php print render($page['header']['views_og_user_groups-block_1']); ?>
 </header>
@@ -108,7 +108,7 @@
   </div>
   <div class="footer-copyright">
     <div class="container">
-      © 2014 Copyright Text
+      &copy; <?php print date('Y'); ?> Commissioner Tools
       <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
     </div>
   </div>

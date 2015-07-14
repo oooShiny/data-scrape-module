@@ -1,3 +1,28 @@
+/*
+    Site Specific Overrides
+*/
+
+form#data-scrape-matchups-form select {
+    display: block !important;
+}
+
+.form-item-team1,
+.form-item-team2,
+.matchup-submit {
+    width: 33%;
+    float: left;
+    padding-left: 1.5em;
+}
+
+.form-item-team2:after {
+    content:'';
+    display:block;
+    clear: both;
+}
+
+/*
+    Materialize Styles
+*/
 .materialize-red.lighten-5 {
   background-color: #fdeaeb !important; }
 

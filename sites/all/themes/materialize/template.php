@@ -10,7 +10,6 @@
  * Override or insert variables into the html template.
  */
 function materialize_preprocess_html(&$vars) {
-1==1;
   $google_icons = array(
     '#tag' => 'link',
     '#attributes' => array(
