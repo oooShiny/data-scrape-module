@@ -49,7 +49,7 @@ function data_scrape_game_form($form, &$form_state) {
   // Get ESPN league ID from current (league) node.
   $args = arg();
   $node = node_load($args[1]);
-  $league = $node->field_espn_league_id['und'][0]['value'];
+  $leagues = $node->field_espn_league_id['und'][0]['value'];
   $form = array();
 
   $form['selected'] = array(
@@ -103,8 +103,10 @@ function data_scrape_matchups_form($form, &$form_state) {
       '#value' => $league,
     );
     $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Get Matchup Data'),
+      '#type' => 'markup',
+      '#markup' => '<button class="btn waves-effect waves-light" type="submit" name="action">Submit
+    <i class="material-icons">send</i>
+  </button>',
     );
 
     // Display the form data from the previous form submission, because that's
@@ -133,8 +135,10 @@ function data_scrape_matchups_form($form, &$form_state) {
       '#value' => $league,
     );
     $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Get Matchup Data'),
+      '#type' => 'markup',
+      '#markup' => '<button class="btn waves-effect waves-light" type="submit" name="action">Submit
+    <i class="material-icons">send</i>
+  </button>',
     );
   }
 
@@ -194,7 +198,10 @@ function data_scrape_block_view($delta = '') {
     // Matchup Builder Block View
     case 'matchup_builder':
       $block['subject'] = t('Matchup Builder');
-      $block['content'] = drupal_render(drupal_get_form('data_scrape_matchups_form'));
+      $block['content'] = '<h3>Team Matchup Analyzer</h3>';
+      $block['content'] .= drupal_render(drupal_get_form('data_scrape_matchups_form'));
+      $block['content'] .= '<div style="display: block; clear: both"></div>';
+
       break;
 
     // Team Schedule Block View
