@@ -40,7 +40,7 @@ class QuickQuicktabs extends QuickRenderer {
         if (!empty($tab)) {
           $attribs = array(
             'id' => 'quicktabs-tabpage-'. $qt_name . '-'. $key,
-            'class' => array('quicktabs-tabpage', ($active_tab == $key ? '' : 'quicktabs-hide')),
+            'class' => array('quicktabs-tabpage card', ($active_tab == $key ? '' : 'quicktabs-hide')),
           );
           $render_array['content']['container']['divs'][] = array(
             '#prefix' => '<div '. drupal_attributes($attribs) .'>',
