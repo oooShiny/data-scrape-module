@@ -6,6 +6,10 @@ form#data-scrape-matchups-form select {
     display: block !important;
 }
 
+.matchup-submit {
+    padding-top: 2.5em;
+}
+
 .form-item-team1,
 .form-item-team2,
 .matchup-submit {
@@ -20,6 +24,9 @@ form#data-scrape-matchups-form select {
     clear: both;
 }
 
+ul.quicktabs-tabs li {
+    padding: 10px;
+}
 /*
     Materialize Styles
 */

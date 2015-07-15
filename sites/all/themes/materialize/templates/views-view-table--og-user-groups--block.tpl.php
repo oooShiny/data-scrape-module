@@ -28,7 +28,7 @@
   <?php endforeach; ?>
 </ul>
 
-<nav class="light-blue lighten-1 z-depth-1" role="navigation">
+<nav class="cyan darken-2 z-depth-1" role="navigation">
   <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Commissioner Tools</a>
     <ul class="right hide-on-med-and-down">
       <!-- Dropdown Trigger -->

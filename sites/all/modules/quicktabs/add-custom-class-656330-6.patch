@@ -1,0 +1,12 @@
+diff --git a/quicktabs.module b/quicktabs.module
+index 2278686..b0cd497 100644
+--- a/quicktabs.module
++++ b/quicktabs.module
+@@ -589,6 +589,7 @@ function theme_qt_quicktabs_tabset($vars) {
+       if ($key == $vars['tabset']['#options']['active']) {
+         $item['class'] = array('active');
+       }
++      $item['class'][] = drupal_html_class($tab['#title']);
+       $item['data'] = drupal_render($tab);
+       $variables['items'][] = $item;
+     }
