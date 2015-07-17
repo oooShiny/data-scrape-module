@@ -20,16 +20,21 @@
  */
 ?>
 
-<!-- Dropdown Structure -->
-<ul id="dropdown1" class="dropdown-content">
   <?php foreach ($rows as $row_count => $row): ?>
-    <?php foreach ($row as $field => $content): ?>
-      <li><?php print $content; ?></li>
-    <?php endforeach; ?>
-  <?php endforeach; ?>
-</ul>
+    <?php if (in_array($row_count, array(0,2,4,6))): ?>
+      <div class="row">
+    <?php endif; ?>
 
-    <ul class="right hide-on-med-and-down">
-      <!-- Dropdown Trigger -->
-      <li><a class="dropdown-button" href="#!" data-activates="dropdown1">My Leagues<i class="material-icons right">arrow_drop_down</i></a></li>
-    </ul>
+      <?php foreach ($row as $field => $content): ?>
+        <?php
+          $pieces = explode(" ", $content);
+          array_splice($pieces, 1, 0, 'class="white-text"');
+          $content = implode(" ", $pieces);
+        ?>
+        <div class="btn-large orange col l4 m6 s12"><span class="flow-text"><?php print $content; ?></span></div>
+      <?php endforeach; ?>
+      <?php if (in_array($row_count, array(2,4,6))): ?>
+        </div>
+      <?php endif; ?>
+
+          <?php endforeach; ?>

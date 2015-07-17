@@ -76,7 +76,11 @@
  */
 ?>
 <header>
-  <?php print render($page['header']['views_og_user_groups-block_1']); ?>
+  <nav class="cyan darken-2 z-depth-1" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Commissioner Tools</a>
+      <?php print render($page['header']['views_og_user_groups-block_1']); ?>
+    </div>
+  </nav>
 </header>
 
 
@@ -99,7 +103,7 @@
   <div class="footer-copyright">
     <div class="container">
       &copy; <?php print date('Y'); ?> Commissioner Tools
-      <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+      <a class="grey-text text-lighten-4 right" href="mailto:support@commissionertools.com?subject=Support Request&amp;body=I found a bug, when I was on the http://commissionertools.com/<?php print arg(0); ?> page!">Found a bug? Let me know!</a>
     </div>
   </div>
 </footer>

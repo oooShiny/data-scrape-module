@@ -1,11 +1,24 @@
-/*
+/******************************
     Site Specific Overrides
-*/
+*******************************/
 
+/* Sticky Footer */
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Un-hide Matchup Builder Select Options */
 form#data-scrape-matchups-form select {
     display: block !important;
 }
 
+/* Matchup Builder Styles */
 .matchup-submit {
     padding-top: 2.5em;
 }
@@ -24,12 +37,24 @@ form#data-scrape-matchups-form select {
     clear: both;
 }
 
+/* League Page Tab Styling */
 ul.quicktabs-tabs li {
     padding: 10px;
 }
-/*
+
+/**/
+.dash-grid {
+    border: 1px solid #eee;
+    margin: 7px 0;
+    text-align: center;
+    line-height: 50px;
+    font-size: 28px;
+    color: white;
+    padding: 0;
+}
+/************************
     Materialize Styles
-*/
+*************************/
 .materialize-red.lighten-5 {
   background-color: #fdeaeb !important; }
 
