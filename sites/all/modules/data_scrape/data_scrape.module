@@ -49,14 +49,17 @@ function data_scrape_game_form($form, &$form_state) {
   // Get ESPN league ID from current (league) node.
   $args = arg();
   $node = node_load($args[1]);
-  $leagues = $node->field_espn_league_id['und'][0]['value'];
+  $league = $node->field_espn_league_id['und'][0]['value'];
   $form = array();
 
-  $form['selected'] = array(
+  $form['league'] = array(
     '#type' => 'hidden',
-    '#options' => $leagues,
-    '#description' => t('Choose the league from which you want to pull games in.'),
+    '#value' => $league,
   );
+//  $form['submit'] = array(
+//    '#type' => 'submit',
+//    '#value' => t('Get Game Data'),
+//  );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Get Game Data'),
@@ -155,12 +158,14 @@ function data_scrape_game_form_submit($form, &$form_state)
 {
   // get years to scrape from node id of selected group
   //TODO: store year the league was established to save us some scraping
-  $league = node_load($form['selected']['#value']);
-  $years = get_league_years($league->field_espn_league_id['und'][0]['value']);
+  $args = arg();
+  $node = node_load($args[1]);
+  $league = $form['league']['#value'];
+  $years = get_league_years($league);
 
   // go through each year and scrape the schedule
   foreach($years as $year) {
-    data_scrape_get_schedule($league->field_espn_league_id['und'][0]['value'], $year, $form['selected']['#value']);
+    data_scrape_get_schedule($league, $year, $node->group_group['und'][0]['value']);
   }
 }
 

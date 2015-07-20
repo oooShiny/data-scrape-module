@@ -77,7 +77,11 @@
 ?>
 <header>
   <nav class="cyan darken-2 z-depth-1" role="navigation">
-    <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo">Commissioner Tools</a>
+    <?php
+      global $user;
+      $home = ($user->uid == 0 ? '/' : '/dashboard');
+    ?>
+    <div class="nav-wrapper container"><a id="logo-container" href="<?php print $home; ?>" class="brand-logo">Commissioner Tools</a>
       <?php print render($page['header']['views_og_user_groups-block_1']); ?>
     </div>
   </nav>
@@ -86,7 +90,10 @@
 
 <main>
   <div class="container" style="padding-top: 1em">
-    <h1><?php print $title; ?></h1>
+    <?php
+      $args = arg();
+      if ($args[1] == 'dashboard') {print '<h1>' . $title . '</h1>'; }
+      ?>
     <?php print render($page['content']); ?>
   </div>
 </main>

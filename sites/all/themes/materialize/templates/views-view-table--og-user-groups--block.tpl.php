@@ -27,6 +27,8 @@
       <li><?php print $content; ?></li>
     <?php endforeach; ?>
   <?php endforeach; ?>
+  <li class="divider"></li>
+  <li><a href="/node/add/league">+ Add League</a></li>
 </ul>
 
     <ul class="right hide-on-med-and-down">

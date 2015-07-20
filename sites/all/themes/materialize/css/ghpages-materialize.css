@@ -42,7 +42,16 @@ ul.quicktabs-tabs li {
     padding: 10px;
 }
 
-/**/
+/* Matchup Builder Tab Styles */
+div#block-data-scrape-matchup-builder,
+div.view-og-team-table,
+div.view-historical-standings,
+div.view-commissioner-report-list {
+    padding: 10px;
+    padding-top: 0;
+}
+
+/* User's League Dashboard Styling */
 .dash-grid {
     border: 1px solid #eee;
     margin: 7px 0;
@@ -8404,7 +8413,7 @@ a.button-collapse.top-nav {
       display: block; } }
   .promo i {
     margin: 40px 0;
-    color: #ee6e73;
+    color: #ff9800;
     font-size: 7rem;
     display: block; }
 

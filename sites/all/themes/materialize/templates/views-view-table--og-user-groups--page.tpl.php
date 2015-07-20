@@ -18,8 +18,9 @@
  *   field id, then row number. This matches the index in $rows.
  * @ingroup views_templates
  */
+$title = $user->name . "'s Leagues";
 ?>
-
+<h1><?php print $title; ?></h1>
   <?php foreach ($rows as $row_count => $row): ?>
     <?php if (in_array($row_count, array(0,2,4,6))): ?>
       <div class="row">
