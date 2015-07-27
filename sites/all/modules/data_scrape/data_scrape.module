@@ -232,7 +232,8 @@ function data_scrape_block_view($delta = '') {
     // Scraping Schedule Button Block View
     case 'scrape_schedule':
       $block['subject'] = '';
-      $block['content'] = drupal_render(drupal_get_form('data_scrape_game_form'));
+      $block['content'] = 'Data not up-to-date?';
+      $block['content'] .= drupal_render(drupal_get_form('data_scrape_game_form'));
       break;
   }
   return $block;
@@ -324,7 +325,19 @@ function get_games($team_id, $league_id, $league_og) {
  */
 function data_scrape_node_postinsert($node) {
   if ( $node->type == 'league' ) {
-     create_teams($node);
+    // Get the ESPN league id from the node.
+    $leagueid = $node->field_espn_league_id['und'][0]['value'];
+    // Get years from homepage select box so we can get historical data.
+    $years = get_league_years($leagueid);
+    // If the years check returns an error then the league is set to private.
+    if ($years[0] == 'ERROR') {
+      $options = array('query' => array('league' => $leagueid));
+      drupal_goto('private-leagues', $options);
+    }
+    else {
+      create_teams($node, $years, $leagueid);
+    }
+
   }
 }
 
@@ -332,9 +345,8 @@ function data_scrape_node_postinsert($node) {
  *  The main function that brings everything together. Creates teams from ESPN
  *  data.
  */
-function create_teams($node) {
+function create_teams($node, $years, $leagueid) {
   // get ESPN league ID from League node
-  $leagueid = $node->field_espn_league_id['und'][0]['value'];
 
   $db_league = db_select('SELECT league from games WHERE league = :id LIMIT 1', array(':id' => $leagueid));
   $db_league = db_select('games', 'g')
@@ -346,8 +358,6 @@ function create_teams($node) {
   if ($db_league === TRUE) {
     $league_exists = TRUE;
   }
-  // get years from homepage select box so we can get historical data
-  $years = get_league_years($leagueid);
   // scrape history from ESPN pages
   $team_history = scrape_history($leagueid, $years);
   // scrape the current standings for each team
@@ -685,11 +695,18 @@ function get_league_years($league_id) {
     $url .= '&seasonId=' . $last_year;
     $html = drupal_http_request($url);
     $select = preg_split('/<select/', $html->data);
-    $options = preg_split('/<option/', $select[1]);
-    unset($options[0]);
-    foreach ($options AS $year) {
-      $split   = preg_split('/value="/', $year);
-      $years[] = substr($split[1], 0, 4);
+    // Check again to make sure league isn't just set to private.
+    if(array_key_exists(1, $select)){
+      $options = preg_split('/<option/', $select[1]);
+      unset($options[0]);
+      foreach ($options AS $year) {
+        $split   = preg_split('/value="/', $year);
+        $years[] = substr($split[1], 0, 4);
+      }
+    }
+    else {
+      $years[0] = 'ERROR';
+      $years[1] = 'Your league is set to private, which means we can\'t scrape the data.';
     }
   }
   return $years;
@@ -727,4 +744,31 @@ function get_teams_from_league_id($league_id) {
   }
 
   return $teams;
+}
+
+/**
+ * implementing hook_form_alter
+ *
+ */
+function data_scrape_form_alter(&$form, $form_state, $form_id) {
+  1==1;
+  if ($form_id == 'node_delete_confirm') {
+    // add an extra submit function to execute, make sure this is the last
+    // function that will be executed. Maybe there are other module that also
+    // add #submit to add changes the form.
+    $form['#submit'][] = 'data_scrape_submit';
+  }
+}
+
+
+/**
+ * function is called after a node is deleted. Put the logic here
+ *
+ */
+function data_scrape_submit() {
+  1==1;
+  $args = arg();
+  $node = node_load($args[1]);
+  drupal_goto('dashboard');
+
 }
