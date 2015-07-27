@@ -14,7 +14,9 @@ main {
 }
 
 /* Un-hide Matchup Builder Select Options */
-form#data-scrape-matchups-form select {
+form#data-scrape-matchups-form select,
+form#commissioner-report-node-form select,
+form#forum-node-form select {
     display: block !important;
 }
 

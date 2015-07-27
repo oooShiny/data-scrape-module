@@ -90,9 +90,12 @@
 
 <main>
   <div class="container" style="padding-top: 1em">
+    <?php if($is_admin || $node->type == 'commissioner_report') { print render($tabs); } ?>
     <?php
       $args = arg();
-      if ($args[1] == 'dashboard') {print '<h1>' . $title . '</h1>'; }
+      if ($args[0] != 'dashboard') {
+        print '<h1>' . $title . '</h1>';
+      }
       ?>
     <?php print render($page['content']); ?>
   </div>

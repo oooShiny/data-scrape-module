@@ -32,6 +32,7 @@
 </ul>
 
     <ul class="right hide-on-med-and-down">
+      <li><a href="/forum">Forums</a></li>
       <!-- Dropdown Trigger -->
       <li><a class="dropdown-button" href="#!" data-activates="dropdown1">My Leagues<i class="material-icons right">arrow_drop_down</i></a></li>
     </ul>

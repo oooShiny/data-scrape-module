@@ -29,10 +29,21 @@ $title = $user->name . "'s Leagues";
       <?php foreach ($row as $field => $content): ?>
         <?php
           $pieces = explode(" ", $content);
-          array_splice($pieces, 1, 0, 'class="white-text"');
+          array_splice($pieces, 1, 0, 'class="blue-text"');
           $content = implode(" ", $pieces);
+
+          $link_pieces = explode('"', $pieces[2]);
+          $link_path = drupal_lookup_path('source', ltrim($link_pieces[1], '/'));
         ?>
-        <div class="btn-large orange col l4 m6 s12"><span class="flow-text"><?php print $content; ?></span></div>
+        <div class="card col l4 m6 s12">
+          <div class="card-content">
+            <span class="card-title">
+              <?php print $content; ?></span>
+          </div>
+          <div class="card-action">
+            <a href="<?php print $link_path; ?>/delete">Remove League</a>
+          </div>
+        </div>
       <?php endforeach; ?>
       <?php if (in_array($row_count, array(2,4,6))): ?>
         </div>
