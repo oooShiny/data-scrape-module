@@ -192,18 +192,28 @@ function format_results($result_array) {
     $home_advantage = 'home field advantage has no bearing on the results when these two teams meet';
   }
   $pretty_html .= '<div class="row">';
-  $pretty_html .= '<div class="col s12 l3"><div class="card-panel hoverable"><span class="card-title blue-text">Overall Record</span><p>' . $result_array['team1name'] . ' is ' . $record . ' against ' . $result_array['team2name'] . ' overall.</p></div></div>';
-  $pretty_html .= '<div class="col s12 l3"><div class="card-panel hoverable"><span class="card-title blue-text">Home Record</span><p> In this matchup, the home team is ' . $home_record . ', proving that ' . $home_advantage . '.</p></div></div>';
+  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Overall Record</span><p>' . $result_array['team1name'] . ' is ' . $record . ' against ' . $result_array['team2name'] . ' overall.</p></div></div>';
+  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Home Record</span><p> In this matchup, the home team is ' . $home_record . ', proving that ' . $home_advantage . '.</p></div></div>';
 
+  // Playoff matchups.
+  if (isset($result_array['records']['playoff'])) {
+    $meetings = $result_array['records']['playoff']['games'];
+    $times = ($meetings > 1 ? 'times' : 'time');
+    $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Playoff Meetings</span><p>These two teams have met in the playoffs ' . $result_array['records']['playoff']['games']. ' ' . $times . '. The most recent being round ' . ltrim($result_array['records']['playoff']['week'], 'P') . ' of the ' . $result_array['records']['playoff']['season'] . ' playoffs.</p></div></div>';
+  }
+  else {
+    $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Playoff Meetings</span><p>These two teams have never met in the playoffs.</p></div></div>';
+  }
+  $pretty_html .= '</div><div class="row">';
   /*
    * Print notable games.
    */
 
   // Closest game.
-  $pretty_html .= '<div class="col s12 l3"><div class="card-panel hoverable"><span class="card-title blue-text">Closest Game</span><p>The closest game was in Week ' . $result_array['records']['nailbiter']['week'] . ' of the ' . $result_array['records']['nailbiter']['season'] . ' season, when ' . $team_data[$result_array['records']['nailbiter']['winner']] . ' squeaked by ' . $team_data[$result_array['records']['nailbiter']['loser']] . ' by a minuscule ' . $result_array['records']['nailbiter']['score'] . ' points.</p></div></div>';
+  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Closest Game</span><p>The closest game was in Week ' . $result_array['records']['nailbiter']['week'] . ' of the ' . $result_array['records']['nailbiter']['season'] . ' season, when ' . $team_data[$result_array['records']['nailbiter']['winner']] . ' squeaked by ' . $team_data[$result_array['records']['nailbiter']['loser']] . ' by a minuscule ' . $result_array['records']['nailbiter']['score'] . ' points.</p></div></div>';
 
   // Biggest blowout.
-  $pretty_html .= '<div class="col s12 l3"><div class="card-panel hoverable"><span class="card-title blue-text">Biggest Blowout</span><p>The biggest blowout occurred in Week ' . $result_array['records']['blowout']['week'] . ' of the ' . $result_array['records']['blowout']['season'] . ' season, when ' . $team_data[$result_array['records']['blowout']['winner']] . ' blew the doors off ' . $team_data[$result_array['records']['blowout']['loser']] . ' by a whopping ' . $result_array['records']['blowout']['score'] . ' points.</p></div></div>';
+  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Biggest Blowout</span><p>The biggest blowout occurred in Week ' . $result_array['records']['blowout']['week'] . ' of the ' . $result_array['records']['blowout']['season'] . ' season, when ' . $team_data[$result_array['records']['blowout']['winner']] . ' blew the doors off ' . $team_data[$result_array['records']['blowout']['loser']] . ' by a whopping ' . $result_array['records']['blowout']['score'] . ' points.</p></div></div>';
 
   $pretty_html .= '</div>';
   /*

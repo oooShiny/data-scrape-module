@@ -23,23 +23,6 @@ function data_scrape_permission() {
   );
 }
 
-function data_scrape_menu() {
-
-//  $items['admin/scrape/test'] = array(
-//    'title' => 'Testing Scrape',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('data_scrape_game_form'),
-//    'access callback' => TRUE,
-//  );
-//  $items['admin/scrape/matchup-builder'] = array(
-//    'title' => 'Get Teams from League',
-//    'page callback' => 'drupal_get_form',
-//    'page arguments' => array('data_scrape_matchups_form'),
-//    'access callback' => TRUE,
-//  );
-//
-//  return $items;
-}
 
 /*
  * The form that initiates the scraping of the league schedules to get the
@@ -758,6 +741,12 @@ function data_scrape_form_alter(&$form, $form_state, $form_id) {
     // add #submit to add changes the form.
     $form['#submit'][] = 'data_scrape_submit';
   }
+
+  if ('commissioner_report_node_form' == $form_id) {
+    // Create a new submit function to the node form.
+    $form['#submit'][] = 'data_scrape_commish_report_submit';
+  }
+
 }
 
 
@@ -766,9 +755,21 @@ function data_scrape_form_alter(&$form, $form_state, $form_id) {
  *
  */
 function data_scrape_submit() {
-  1==1;
   $args = arg();
   $node = node_load($args[1]);
   drupal_goto('dashboard');
 
+}
+
+/*
+ * Custom submit form to set the selected OG as the argument for any views
+ * blocks that have been added to the Commish Report node.
+ */
+function data_scrape_commish_report_submit($form, &$form_state) {
+  $og = $form_state['values']['og_group_ref']['und'][0]['target_id'];
+  foreach($form_state['values']['field_report_content']['und'] as $block) {
+    if (isset($block['field_cr_standings_block']['und'][0]['vargs'])) {
+      $block['entity']->field_cr_standings_block['und'][0]['vargs'] = $og;
+    }
+  }
 }

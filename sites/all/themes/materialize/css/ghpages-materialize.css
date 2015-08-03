@@ -63,6 +63,21 @@ div.view-commissioner-report-list {
     color: white;
     padding: 0;
 }
+
+
+/* Donate form styles */
+span.field-name {
+    color: #6e787f;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    font-stretch: normal;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: 200;
+    height: 30px;
+    letter-spacing: normal;
+    line-height: normal;
+}
 /************************
     Materialize Styles
 *************************/
@@ -2408,11 +2423,12 @@ span.badge {
   line-height: inherit;
   color: #757575;
   position: absolute;
-  right: 15px;
+  /*right: 15px;*/
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
-  span.badge.new {
+  span.badge.new,
+  span.badge.color {
     font-weight: 300;
     font-size: 0.8rem;
     color: #fff;
