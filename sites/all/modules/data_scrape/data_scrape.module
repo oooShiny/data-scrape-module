@@ -570,7 +570,7 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
         $score_link = explode('&', $game_array[6]);
 
         // get score, if there is one
-        if (strpos($score_link[1], 'nbsp;') === FALSE) {
+        if (strpos($score_link[1], 'nbsp;') === FALSE && strpos($score_link[5], 'Box') === FALSE) {
           $score_rough = explode('-', $score_link[5]);
           $home_score  = ltrim($score_rough[0], 'version=quick">');
           $away_score  = rtrim($score_rough[1], "</a></NOBR></td>\n</tr>\n");
