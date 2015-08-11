@@ -478,7 +478,7 @@ return $standings;
 
 function scrape_history($leagueid, $years) {
 	$history = array();
-	// go through each year and get final standings
+	// Go through each year and get final standings.
 	foreach($years as $year) {
 		$url = 'http://games.espn.go.com/ffl/tools/finalstandings?leagueId=' . $leagueid . '&seasonId=' . $year;
 		// scrape HTML from ESPN league standings page
@@ -492,15 +492,15 @@ function scrape_history($leagueid, $years) {
 			if ( strpos( $row, 'FINAL LEAGUE STANDINGS' ) !== FALSE ) {
 				// skip first row (table column headings)
 			} else {
-				$cells                         = preg_split( '/<td .*?>/', $row );
-				$team_info                     = explode( '"', $cells[2] );
-				$team_name                     = explode( '(', $team_info[1] );
-				$team_owner                    = rtrim( $team_name[1], ')' );
-              $team_id                       = explode( '&amp;', $team_info[3] );
-              $id = substr( $team_id[1], 7 );
+				$cells = preg_split( '/<td .*?>/', $row );
+				$team_info = explode( '"', $cells[2] );
+                  $team_name = explode( '(', $team_info[1] );
+                  $team_owner = rtrim( $team_name[1], ')' );
+                  $team_id = explode( '&amp;', $team_info[3] );
+                    $id = substr( $team_id[1], 7 );
 
-              $history[ $year ][$id]['team_name'] = $team_name[0];
-              $history[ $year ][$id]['team_owner'] = $team_owner;
+              $history[ $year ][$id]['team_name'] = htmlentities($team_name[0], ENT_IGNORE, "UTF-8");
+              $history[ $year ][$id]['team_owner'] = htmlentities($team_owner, ENT_IGNORE, "UTF-8");
 
 				$record                     = explode( '-', $cells[5] );
 				$history[ $year ][$id]['wins']   = ltrim( $record[4], '>' );
