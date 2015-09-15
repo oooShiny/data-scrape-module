@@ -158,14 +158,12 @@ function format_results($result_array) {
   $team_data[$result_array['team1id']] = $result_array['team1name'];
   $team_data[$result_array['team2id']] = $result_array['team2name'];
 
-  $pretty_html = '<div style="clear: both"></div>';
   // Print matchup team names.
-  $pretty_html .= '<h4>' . $result_array['team1name'] . ' vs. ' . $result_array['team2name'] . '</h4>';
+  $theme_array['matchup_title'] = '<h4>' . $result_array['team1name'] . ' vs. ' . $result_array['team2name'] . '</h4>';
 
   /*
    * Print overall head-to-head record and related stats.
    */
-  $pretty_html .= '<strong>All Time Statistics</strong>';
 
   // Overall record (using the first team).
   $record = $result_array['totals'][$result_array['team1id']]['wins'] . ' - ' . $result_array['totals'][$result_array['team1id']]['losses'];
@@ -191,45 +189,41 @@ function format_results($result_array) {
   else {
     $home_advantage = 'home field advantage has no bearing on the results when these two teams meet';
   }
-  $pretty_html .= '<div class="row">';
-  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Overall Record</span><p>' . $result_array['team1name'] . ' is ' . $record . ' against ' . $result_array['team2name'] . ' overall.</p></div></div>';
-  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Home Record</span><p> In this matchup, the home team is ' . $home_record . ', proving that ' . $home_advantage . '.</p></div></div>';
+  $theme_array['card']['overall_record'] = $result_array['team1name'] . ' is ' . $record . ' against ' . $result_array['team2name'] . ' overall.';
+  $theme_array['card']['home_field'] = 'In this matchup, the home team is ' . $home_record . ', proving that ' . $home_advantage . '.';
 
   // Playoff matchups.
   if (isset($result_array['records']['playoff'])) {
     $meetings = $result_array['records']['playoff']['games'];
     $times = ($meetings > 1 ? 'times' : 'time');
-    $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Playoff Meetings</span><p>These two teams have met in the playoffs ' . $result_array['records']['playoff']['games']. ' ' . $times . '. The most recent being round ' . ltrim($result_array['records']['playoff']['week'], 'P') . ' of the ' . $result_array['records']['playoff']['season'] . ' playoffs.</p></div></div>';
+    $theme_array['card']['playoff_record'] = 'These two teams have met in the playoffs ' . $result_array['records']['playoff']['games']. ' ' . $times . '. The most recent being round ' . ltrim($result_array['records']['playoff']['week'], 'P') . ' of the ' . $result_array['records']['playoff']['season'] . ' playoffs.';
   }
   else {
-    $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Playoff Meetings</span><p>These two teams have never met in the playoffs.</p></div></div>';
+    $theme_array['card']['playoff_record'] = 'These two teams have never met in the playoffs.';
   }
-  $pretty_html .= '</div><div class="row">';
+
   /*
    * Print notable games.
    */
 
   // Closest game.
-  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Closest Game</span><p>The closest game was in Week ' . $result_array['records']['nailbiter']['week'] . ' of the ' . $result_array['records']['nailbiter']['season'] . ' season, when ' . $team_data[$result_array['records']['nailbiter']['winner']] . ' squeaked by ' . $team_data[$result_array['records']['nailbiter']['loser']] . ' by a minuscule ' . $result_array['records']['nailbiter']['score'] . ' points.</p></div></div>';
+  $theme_array['card']['closest_game'] = 'The closest game was in Week ' . $result_array['records']['nailbiter']['week'] . ' of the ' . $result_array['records']['nailbiter']['season'] . ' season, when ' . $team_data[$result_array['records']['nailbiter']['winner']] . ' squeaked by ' . $team_data[$result_array['records']['nailbiter']['loser']] . ' by a minuscule ' . $result_array['records']['nailbiter']['score'] . ' points.';
 
   // Biggest blowout.
-  $pretty_html .= '<div class="col s12 l4"><div class="card-panel hoverable"><span class="card-title blue-text">Biggest Blowout</span><p>The biggest blowout occurred in Week ' . $result_array['records']['blowout']['week'] . ' of the ' . $result_array['records']['blowout']['season'] . ' season, when ' . $team_data[$result_array['records']['blowout']['winner']] . ' blew the doors off ' . $team_data[$result_array['records']['blowout']['loser']] . ' by a whopping ' . $result_array['records']['blowout']['score'] . ' points.</p></div></div>';
+  $theme_array['card']['biggest_blowout'] = 'The biggest blowout occurred in Week ' . $result_array['records']['blowout']['week'] . ' of the ' . $result_array['records']['blowout']['season'] . ' season, when ' . $team_data[$result_array['records']['blowout']['winner']] . ' blew the doors off ' . $team_data[$result_array['records']['blowout']['loser']] . ' by a whopping ' . $result_array['records']['blowout']['score'] . ' points.';
 
-  $pretty_html .= '</div>';
   /*
    * Print results table.
    */
-  $pretty_html .= '<table class="striped hoverable"><thead><tr><th>Season</th><th>Week</th><th>Home</th><th>Score</th><th>Away</th></tr></thead>';
-  $pretty_html .= '<tbody>';
+  $results = '';
   foreach ($result_array['games'] as $game) {
     $score = $game['homescore'] . ' - ' . $game['awayscore'];
-    $pretty_html .= '<tr>';
-    $pretty_html .= '<td>' . $game['season'] . '</td><td>' . $game['week'] . '</td>';
-    $pretty_html .= '<td>' . $team_data[$game['home']] . '</td><td>' . $score . '</td><td>' . $team_data[$game['away']] . '</td>';
-    $pretty_html .= '</tr>';
+    $results .= '<tr>';
+    $results .= '<td>' . $game['season'] . '</td><td>' . $game['week'] . '</td>';
+    $results .= '<td>' . $team_data[$game['home']] . '</td><td>' . $score . '</td><td>' . $team_data[$game['away']] . '</td>';
+    $results .= '</tr>';
   }
-  $pretty_html .= '</tbody></table>';
+  $theme_array['results'] = $results;
 
-
-  return $pretty_html;
+  return $theme_array;
 }
