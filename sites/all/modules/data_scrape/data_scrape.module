@@ -724,7 +724,7 @@ function get_league_years($league_id) {
       $years[] = substr($split[1], 0, 4);
     }
   } else {
-    // Can't find the select box (league probably not active for current season).
+    // Can't find the select box (league not active for current season or first season).
     // Redo the scrape for last year instead.
     $last_year = date('Y') - 1;
     $url .= '&seasonId=' . $last_year;
@@ -740,8 +740,20 @@ function get_league_years($league_id) {
       }
     }
     else {
-      $years[0] = 'ERROR';
-      $years[1] = 'Your league is set to private, which means we can\'t scrape the data.';
+      // Check to see if this is the inaugural season, and not a private league.
+      $history_url = 'http://games.espn.go.com/ffl/history?leagueId=' . $league_id;
+      $history_html = drupal_http_request($history_url);
+      // History page will give a message saying it's the inaugural season.
+      $inaugural = preg_split('/inaugural/', $history_html->data);
+      if (array_key_exists(1, $inaugural)) {
+        // Add current year to years array.
+        $years[] = date('Y');
+      }
+      else {
+        // At this point, we're pretty sure it's a private league. Set the error.
+        $years[0] = 'ERROR';
+        $years[1] = 'Your league is set to private, which means we can\'t scrape the data.';
+      }
     }
   }
   return $years;
