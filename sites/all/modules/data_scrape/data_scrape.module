@@ -463,8 +463,9 @@ function scrape_current($leagueid) {
             $losses = explode('>', $split[9]);
             $ties = explode('>', $split[11]);
             // store team info in standings array
-            $standings[$id]['name'] = rtrim($team_info[0]);
-            $standings[$id]['owner'] = rtrim($team_info[1], ')');
+            $standings[$id]['owner'] = rtrim(array_pop($team_info), ')');
+
+            $standings[$id]['name'] = rtrim(implode('(', $team_info));
             $standings[$id]['wins'] = rtrim($wins[1], '</td' );
             $standings[$id]['losses'] = rtrim($losses[1], '</td' );
             $standings[$id]['ties'] = rtrim($ties[1], '</td' );
@@ -838,7 +839,7 @@ function data_scrape_commish_report_submit($form, &$form_state) {
 }
 
 function data_scrape_menu() {
-  module_load_include('inc', 'data_scrape', 'data_scrape.espn');
+  module_load_include('inc', 'data_scrape', 'data_scrape.image');
 
   $items['update-games'] = array(
     'page callback' => 'data_scrape_update_games_form',
@@ -848,7 +849,10 @@ function data_scrape_menu() {
     'page callback' => 'espn_login',
     'access arguments' => TRUE,
   );
-
+  $items['image-test'] = array(
+    'page callback' => 'display_image',
+    'access arguments' => TRUE,
+  );
   return $items;
 }
 /**
