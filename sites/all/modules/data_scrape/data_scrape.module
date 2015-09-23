@@ -78,7 +78,8 @@ function data_scrape_game_form_submit($form, &$form_state)
 
   // go through each year and scrape the schedule
   foreach($years as $year) {
-    data_scrape_get_schedule($league, $year, $node->group_group['und'][0]['value']);
+    $standings = data_scrape_get_schedule($league, $year, $node->group_group['und'][0]['value']);
+    update_teams($league, $year);
   }
   drupal_set_message('Game Database Updated!');
 }
@@ -428,6 +429,42 @@ function create_teams($node, $years, $leagueid) {
   }
 }
 
+function update_teams($league_id, $standings) {
+  // Get teams in league.
+  $teams = get_teams_from_league_id($league_id);
+  // Get latest standings.
+  $standings = scrape_current($league_id);
+  // Update information.
+  foreach ($teams as $team_obj) {
+    // Making things easier to read further down.
+    $team = entity_metadata_wrapper('node', $team_obj);
+    $id = $team->field_team_id->value();
+
+    // Updating Team info (name, owner).
+    $team->title->set($standings[$id]['name']);
+    $team->field_team_owner->set($standings[$id]['owner']);
+    // Updating record.
+    $team->field_team_wins->set($standings[$id]['wins']);
+    $team->field_team_losses->set($standings[$id]['losses']);
+    $team->field_team_ties->set($standings[$id]['ties']);
+    // Updating other stats.
+    $team->field_team_points_for->set($standings[$id]['pf']);
+    $team->field_team_points_against->set($standings[$id]['pa']);
+    $team->field_team_streak->set($standings[$id]['streak']);
+    // Save the changes.
+    $team->save();
+  }
+
+}
+
+/**
+ *
+ * Get current year standings for the league.
+ *
+ * @param $leagueid
+ *
+ * @return array
+ */
 function scrape_current($leagueid) {
   $standings = array();
   $url = 'http://games.espn.go.com/ffl/standings?leagueId=' . $leagueid;
@@ -651,7 +688,7 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
         }
         else {
           // Update game data in the database directly.
-          $nid = db_update('games')
+          db_update('games')
           ->fields(array(
             'homescore' => $home_score,
             'awayscore' => $away_score,
