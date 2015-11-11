@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Commish: Leagues Feature feature.
+ */
+
+include_once 'commish_leagues_feature.features.inc';

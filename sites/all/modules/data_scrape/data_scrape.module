@@ -23,6 +23,21 @@ function data_scrape_permission() {
   );
 }
 
+/**
+ *
+ */
+/**
+ * Implements hook_theme().
+ */
+function data_scrape_theme($existing, $type, $theme, $path) {
+  $theme = array();
+  $theme['data_scrape'] = array(
+    'template' => 'data-scrape',
+    'variables' => array(),
+  );
+  return $theme;
+
+}
 
 /*
  * The form that initiates the scraping of the league schedules to get the
@@ -47,21 +62,6 @@ function data_scrape_game_form($form, &$form_state) {
   return $form;
 }
 
-/**
- *
- */
-/**
- * Implements hook_theme().
- */
-function data_scrape_theme($existing, $type, $theme, $path) {
-  $theme = array();
-  $theme['data_scrape'] = array(
-    'template' => 'data-scrape',
-    'variables' => array(),
-  );
-  return $theme;
-
-}
 
 /**
  * Add a submit handler/function to the form.
@@ -439,20 +439,42 @@ function update_teams($league_id, $standings) {
     // Making things easier to read further down.
     $team = entity_metadata_wrapper('node', $team_obj);
     $id = $team->field_team_id->value();
+    // Make sure this team still exists.
+    if ($standings[$id]) {
+      // Updating Team info (name, owner).
+      $team->title->set($standings[$id]['name']);
+      $team->field_team_owner->set($standings[$id]['owner']);
+      // Updating record.
+      $team->field_team_wins->set($standings[$id]['wins']);
+      $team->field_team_losses->set($standings[$id]['losses']);
+      $team->field_team_ties->set($standings[$id]['ties']);
+      // Updating other stats.
+      $team->field_team_points_for->set($standings[$id]['pf']);
+      $team->field_team_points_against->set($standings[$id]['pa']);
+      $team->field_team_streak->set($standings[$id]['streak']);
 
-    // Updating Team info (name, owner).
-    $team->title->set($standings[$id]['name']);
-    $team->field_team_owner->set($standings[$id]['owner']);
-    // Updating record.
-    $team->field_team_wins->set($standings[$id]['wins']);
-    $team->field_team_losses->set($standings[$id]['losses']);
-    $team->field_team_ties->set($standings[$id]['ties']);
-    // Updating other stats.
-    $team->field_team_points_for->set($standings[$id]['pf']);
-    $team->field_team_points_against->set($standings[$id]['pa']);
-    $team->field_team_streak->set($standings[$id]['streak']);
-    // Save the changes.
-    $team->save();
+      // Updating historical standings.
+      $fc = $team->field_historical_stats->value();
+      foreach ($fc as $fc_item) {
+        $item = entity_metadata_wrapper('field_collection_item', $fc_item);
+        $fc_year = $item->field_historical_year->value();
+        $this_year = date('Y');
+        if ($fc_year == $this_year) {
+          $item->field_historical_team_name->set($standings[$id]['name']);
+          $item->field_historical_owner->set($standings[$id]['owner']);
+
+          $item->field_historical_wins->set($standings[$id]['wins']);
+          $item->field_historical_losses->set($standings[$id]['losses']);
+          $item->field_historical_ties->set($standings[$id]['ties']);
+
+          $item->field_historical_points_for->set($standings[$id]['pf']);
+          $item->field_historical_points_against->set($standings[$id]['pa']);
+          $item->save();
+        }
+      }
+      // Save the changes.
+      $team->save();
+    }
   }
 
 }
@@ -473,6 +495,7 @@ function scrape_current($leagueid) {
   // split string on each standings table
   $tables = preg_split( '/<table (.*) class="tableBody" /', $html->data );
   foreach($tables as $table) {
+    $rows = array();
     if(strpos( $table, 'DOCTYPE HTML PUBLIC' ) !== FALSE) {
       // skip this one
     }elseif(strpos($table, '<td colspan="6">') !== FALSE) {
@@ -483,6 +506,7 @@ function scrape_current($leagueid) {
       $rows    = preg_split('/<tr class="(odd|even)Row bodyCopy sortableRow">/', $table);
       $colspan = 7;
     }
+    if ($rows) {
       foreach($rows as $row){
         if(strpos( $row, 'tableHead' ) !== FALSE) {
           // skip header row
@@ -516,9 +540,10 @@ function scrape_current($leagueid) {
             $streak = explode('>', $data[6]);
             $standings[$id]['streak'] = rtrim($streak[1], '</td');
           }
-
+        }
       }
     }
+
   }
 return $standings;
 }
@@ -611,16 +636,17 @@ function scrape_league_champions($league_id, $years) {
 function data_scrape_get_schedule($league_id, $year, $og_id) {
   // Check to see if we already have data for this season.
   $check = db_select('games', 'g')
-    ->fields('g', array('league', 'season'))
+    ->fields('g', array('week'))
     ->condition('g.league', $league_id, '=')
     ->condition('g.season', $year, '=')
+    ->orderBy('g.week', 'DESC')
     ->range(0,1)
     ->execute()
     ->fetchField();
 
-  $db_action = 0;
+  $curr_week = 0;
   if ($check !== FALSE) {
-    $db_action = 1;
+    $curr_week = $check;
   }
 
   $games = array();
@@ -660,7 +686,10 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
         $score_link = explode('&', $game_array[6]);
 
         // get score, if there is one
-        if (strpos($score_link[1], 'nbsp;') === FALSE && strpos($score_link[5], 'Box') === FALSE) {
+        if (strpos($score_link[1], 'nbsp;') === FALSE
+            && strpos($score_link[2], 'Preview') === FALSE
+            && strpos($score_link[5], 'Box') === FALSE
+        ) {
           $score_rough = explode('-', $score_link[5]);
           $home_score  = ltrim($score_rough[0], 'version=quick">');
           $away_score  = rtrim($score_rough[1], "</a></NOBR></td>\n</tr>\n");
@@ -670,9 +699,8 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
           $home_score = 0;
           $away_score = 0;
         }
-
         // Insert or Update data depending on if we found it in the DB already
-        if ($db_action == 0) {
+        if ($curr_week < $week) {
           // Insert game data into the database directly.
           $nid = db_insert('games')
             ->fields(array(
@@ -809,12 +837,17 @@ function assign_to_group($node, $gid) {
  * Get team info from league ID and team ID
  */
 function get_teams_from_league_id($league_id) {
+  global $user;
   // get $league_nid from $league_id
-  $league_node = db_select('field_revision_field_espn_league_id', 'espn')
-    ->fields('espn', array('entity_id'))
+  $league_node = db_select('field_revision_field_espn_league_id', 'espn');
+  $league_node->join('node', 'n', 'n.vid = espn.revision_id');
+  $league_node->fields('espn', array('entity_id'))
     ->condition('espn.field_espn_league_id_value', $league_id, '=')
-    ->execute();
-  $league_nid = $league_node->fetchField();
+    ->condition('n.uid', $user->uid, '=')
+    ->range(0,1);
+    $result = $league_node->execute();
+
+  $league_nid = $result->fetchField();
 
   // find nodes where gid = $league_nid
   $team_result = db_select('og_membership', 'og')
@@ -872,11 +905,13 @@ function data_scrape_commish_report_submit($form, &$form_state) {
     if (isset($block['field_cr_standings_block']['und'][0]['vargs'])) {
       $block['entity']->field_cr_standings_block['und'][0]['vargs'] = $og;
     }
+    elseif (isset($block['field_power_rankings']['und'][0]['vargs'])) {
+      $block['entity']->field_power_rankings['und'][0]['vargs'] = $og;
+    }
   }
 }
 
 function data_scrape_menu() {
-  module_load_include('inc', 'data_scrape', 'data_scrape.image');
 
   $items['update-games'] = array(
     'page callback' => 'data_scrape_update_games_form',
@@ -886,12 +921,44 @@ function data_scrape_menu() {
     'page callback' => 'espn_login',
     'access arguments' => TRUE,
   );
-  $items['image-test'] = array(
-    'page callback' => 'display_image',
+  $items['draft-scrape'] = array(
+    'page callback' => 'data_scrape_view_draft_form',
     'access arguments' => TRUE,
   );
   return $items;
 }
+
+
+function data_scrape_view_draft_form() {
+  return drupal_get_form('data_scrape_draft_form');
+}
+/**
+ * Implements hook_form().
+ */
+function data_scrape_draft_form($node, &$form_state) {
+  $league = '242286';
+  $form = array();
+
+  $form['league'] = array(
+    '#type' => 'hidden',
+    '#value' => $league,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Scrape Draft Info'),
+  );
+
+  return $form;
+}
+
+function data_scrape_draft_form_submit($form, &$form_state) {
+  module_load_include('inc', 'data_scrape', 'data_scrape.draft');
+
+  $league = $form['league']['#value'];
+  scrape_draft_results($league);
+
+}
+
 /**
  * Provide a form to manually input scores for any games that can't be scraped.
  */
@@ -910,7 +977,6 @@ function data_scrape_update_games_form($form, &$form_state) {
   foreach ($teams as $t) {
     $team[$t->field_team_id['und'][0]['value']] = $t->title;
   }
-  1==1;
   ?>
   <table>
   <thead>
