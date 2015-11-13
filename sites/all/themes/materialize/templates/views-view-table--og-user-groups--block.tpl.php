@@ -18,7 +18,11 @@
  *   field id, then row number. This matches the index in $rows.
  * @ingroup views_templates
  */
+
+global $user;
+$home = ($user->uid == 0 ? '<a href="/">Home</a>' : '<a href="/dashboard">Dashboard</a>');
 ?>
+
 
 <!-- Dropdown Structure -->
 <ul id="dropdown1" class="dropdown-content">
@@ -33,5 +37,7 @@
 
     <ul class="right hide-on-med-and-down">
       <!-- Dropdown Trigger -->
+      <li><?php print $home; ?></li>
+      <li><a href="/faq">FAQs</a></li>
       <li><a class="dropdown-button" href="#!" data-activates="dropdown1">My Leagues<i class="material-icons right">arrow_drop_down</i></a></li>
     </ul>
