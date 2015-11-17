@@ -197,9 +197,10 @@ function data_scrape_block_view($delta = '') {
   switch ($delta) {
     // Matchup Builder Block View
     case 'matchup_builder':
+      $form = drupal_get_form('data_scrape_matchups_form');
       $block['subject'] = t('Matchup Builder');
       $block['content'] = '<h3>Team Matchup Analyzer</h3>';
-      $block['content'] .= drupal_render(drupal_get_form('data_scrape_matchups_form'));
+      $block['content'] .= drupal_render($form);
       $block['content'] .= '<div style="display: block; clear: both"></div>';
 
       break;
@@ -466,9 +467,9 @@ function update_teams($league_id, $standings) {
           $item->field_historical_wins->set($standings[$id]['wins']);
           $item->field_historical_losses->set($standings[$id]['losses']);
           $item->field_historical_ties->set($standings[$id]['ties']);
-
-          $item->field_historical_points_for->set($standings[$id]['pf']);
-          $item->field_historical_points_against->set($standings[$id]['pa']);
+//TODO: Change PF and PA from integers to decimals so we don't have to round here.
+          $item->field_historical_points_for->set(round($standings[$id]['pf']));
+          $item->field_historical_points_against->set(round($standings[$id]['pa']));
           $item->save();
         }
       }
@@ -834,18 +835,29 @@ function assign_to_group($node, $gid) {
 }
 
 /*
- * Get team info from league ID and team ID
+ * Get team info from league ID
  */
 function get_teams_from_league_id($league_id) {
   global $user;
-  // get $league_nid from $league_id
-  $league_node = db_select('field_revision_field_espn_league_id', 'espn');
-  $league_node->join('node', 'n', 'n.vid = espn.revision_id');
-  $league_node->fields('espn', array('entity_id'))
-    ->condition('espn.field_espn_league_id_value', $league_id, '=')
-    ->condition('n.uid', $user->uid, '=')
-    ->range(0,1);
-    $result = $league_node->execute();
+  if ($user->uid !== '1') {
+    // get $league_nid from $league_id
+    $league_node = db_select('field_revision_field_espn_league_id', 'espn');
+    $league_node->join('node', 'n', 'n.vid = espn.revision_id');
+    $league_node->fields('espn', array('entity_id'))
+                ->condition('espn.field_espn_league_id_value', $league_id, '=')
+                ->condition('n.uid', $user->uid, '=')
+                ->range(0,1);
+  }
+  else {
+    // get $league_nid from $league_id
+    $league_node = db_select('field_revision_field_espn_league_id', 'espn');
+    $league_node->join('node', 'n', 'n.vid = espn.revision_id');
+    $league_node->fields('espn', array('entity_id'))
+                ->condition('espn.field_espn_league_id_value', $league_id, '=')
+                ->range(0,1);
+  }
+
+  $result = $league_node->execute();
 
   $league_nid = $result->fetchField();
 
