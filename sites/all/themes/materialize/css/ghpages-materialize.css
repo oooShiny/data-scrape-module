@@ -5634,7 +5634,8 @@ small {
   padding: 20px;
   margin: 0.5rem 0 1rem 0;
   border-radius: 2px;
-  background-color: #fff; }
+  background-color: #fff;
+  min-height: 190px;}
 
 .card {
   position: relative;
@@ -8854,3 +8855,8 @@ body.parallax-demo footer {
 
 #twitter-widget-0 {
   width: 190px !important; }
+
+.paragraphs-item-cr-image img {
+  max-width: 100%;
+  height: auto;
+}
