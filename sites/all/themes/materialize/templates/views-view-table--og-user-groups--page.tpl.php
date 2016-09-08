@@ -21,6 +21,11 @@
 $title = $user->name . "'s Leagues";
 ?>
 <h1><?php print $title; ?></h1>
+<div class="row">
+  <div class="col s12">
+    <a href="/node/add/league" class="btn">+ Add League</a>
+  </div>
+</div>
   <?php foreach ($rows as $row_count => $row): ?>
     <?php if (in_array($row_count, array(0,2,4,6))): ?>
       <div class="row">
@@ -49,4 +54,4 @@ $title = $user->name . "'s Leagues";
         </div>
       <?php endif; ?>
 
-          <?php endforeach; ?>
+  <?php endforeach; ?>

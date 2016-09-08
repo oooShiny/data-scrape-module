@@ -41,7 +41,12 @@ form#forum-node-form select {
 
 /* League Page Tab Styling */
 ul.quicktabs-tabs li {
-    padding: 10px;
+  display: inline-block;
+  background: none;
+  list-style-type: none;
+  padding: 2px;
+  white-space: nowrap;
+  padding: 5px 10px 40px 10px;
 }
 
 /* Matchup Builder Tab Styles */

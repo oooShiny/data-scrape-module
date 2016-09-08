@@ -32,7 +32,7 @@ $home = ($user->uid == 0 ? '<a href="/">Home</a>' : '<a href="/dashboard">Dashbo
     <?php endforeach; ?>
   <?php endforeach; ?>
   <li class="divider"></li>
-  <li><a href="/node/add/league">+ Add League</a></li>
+  <li><a href="/dashboard"><i class="material-icons left" style="font-size: 1.5rem">settings</i>Leagues</a></li>
 </ul>
 
     <ul class="right hide-on-med-and-down">
