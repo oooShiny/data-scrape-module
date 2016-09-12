@@ -453,6 +453,11 @@ function update_teams($league_id, $standings) {
       $team->field_team_points_for->set($standings[$id]['pf']);
       $team->field_team_points_against->set($standings[$id]['pa']);
       $team->field_team_streak->set($standings[$id]['streak']);
+      // Updating Milestones
+      $team->field_team_most_points->set($high_score_text);
+      $team->field_team_least_points->set($low_score_text);
+      $team->field_team_biggest_win->set($big_win_text);
+      $team->field_team_biggest_loss->set($big_loss_text);
 
       // Updating historical standings.
       $fc = $team->field_historical_stats->value();
