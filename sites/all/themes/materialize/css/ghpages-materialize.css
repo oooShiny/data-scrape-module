@@ -109,6 +109,10 @@ th.views-field.views-field-field-team-owner {
     min-width: 130px;
 }
 
+td.views-field.views-field-body {
+  max-width: 800px;
+}
+
 th.views-field.views-field-nothing {
     min-width: 90px;
 }
