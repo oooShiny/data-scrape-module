@@ -111,6 +111,7 @@ th.views-field.views-field-field-team-owner {
 
 td.views-field.views-field-body {
   max-width: 800px;
+  word-wrap: break-word;
 }
 
 th.views-field.views-field-nothing {
