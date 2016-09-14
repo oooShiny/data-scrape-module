@@ -248,6 +248,7 @@ function data_scrape_block_view($delta = '') {
  * $league_og: the Drupal organic group node ID
  */
 function get_games($team_id, $league_id, $league_og) {
+  //TODO: Get all games to check for league leaders.
   $games = array();
   $teams = array();
   // get all of the teams in the league
@@ -347,7 +348,7 @@ function data_scrape_node_postinsert($node) {
  *  data.
  */
 function create_teams($node, $years, $leagueid) {
-  // get ESPN league ID from League node
+  // Get ESPN league ID from League node.
 
   $db_league = db_select('SELECT league from games WHERE league = :id LIMIT 1', array(':id' => $leagueid));
   $db_league = db_select('games', 'g')
@@ -371,7 +372,7 @@ function create_teams($node, $years, $leagueid) {
     $team_node->type = "team";
     node_object_prepare($team_node); // Set some default values
 
-    $team_node->title    = $team['name'];
+    $team_node->title    = remove_emoji($team['name']);
     $team_node->language = LANGUAGE_NONE;
 
     global $user;
@@ -433,6 +434,14 @@ function create_teams($node, $years, $leagueid) {
 function update_teams($league_id, $standings) {
   // Get teams in league.
   $teams = get_teams_from_league_id($league_id);
+
+  // Sometimes we don't have teams at this point. Let's double check
+  // and create teams if there aren't any.
+  if (is_null($teams) || empty($teams)) {
+    $node = node_load(arg(1));
+    $years = get_league_years($league_id);
+    create_teams($node, $years, $league_id);
+  }
   // Get latest standings.
   $standings = scrape_current($league_id);
   // Update information.
@@ -442,6 +451,54 @@ function update_teams($league_id, $standings) {
     $id = $team->field_team_id->value();
     // Make sure this team still exists.
     if ($standings[$id]) {
+      // Get this team's games played.
+      $og = $team_obj->og_group_ref['und'][0]['target_id'];
+      // Load node.admin.inc from the node module.
+      module_load_include('inc', 'data_scrape', 'data_scrape.espn');
+      $games = _espn_get_games($id, $league_id, $og);
+      // Initialize variables.
+      $high_score = 0;
+      $low_score = 999;
+      $big_win = 0;
+      $big_loss = 0;
+      foreach ($games as $year => $weeks) {
+        foreach ($weeks as $week => $game) {
+          if ($game['home_id'] == $id && $game['homescore'] != 0) {
+            $opponent = 'away';
+            // Check home scores for highest/lowest.
+            if ($game['homescore'] > $high_score) {
+              $high_score = $game['homescore'];
+              $high_score_text = $high_score . ' points vs ' . $game['away'] . ' (' . $year . ' week ' . $week . ')';
+            }
+            if ($game['homescore'] < $low_score) {
+              $low_score = $game['homescore'];
+              $low_score_text = $low_score . ' points vs ' . $game['away'] . ' (' . $year . ' week ' . $week . ')';
+            }
+          }
+          elseif ($game['away_id'] == $id && $game['awayscore'] != 0) {
+            $opponent = 'home';
+            // Check away scores for highest/lowest.
+            if ($game['awayscore'] > $high_score) {
+              $high_score = $game['awayscore'];
+              $high_score_text = $high_score . ' points vs ' . $game['home'] . ' (' . $year . ' week ' . $week . ')';
+            }
+            if ($game['awayscore'] < $low_score) {
+              $low_score = $game['awayscore'];
+              $low_score_text = $low_score . ' points vs ' . $game['home'] . ' (' . $year . ' week ' . $week . ')';
+            }
+          }
+          $margin = abs($game['homescore'] - $game['awayscore']);
+          if ($game['result'] == 'win' && $margin > $big_win) {
+            $big_win = $margin;
+            $big_win_text = $big_win . ' points vs ' . $game[$opponent] . ' (' . $year . ' week ' . $week . ')';
+          }
+          elseif ($game['result'] == 'loss' && $margin > $big_loss) {
+            $big_loss = $margin;
+            $big_loss_text = $big_loss . ' points vs ' . $game[$opponent] . ' (' . $year . ' week ' . $week . ')';
+          }
+        }
+      }
+
       // Updating Team info (name, owner).
       $team->title->set($standings[$id]['name']);
       $team->field_team_owner->set($standings[$id]['owner']);
@@ -1031,4 +1088,8 @@ function data_scrape_update_games_form($form, &$form_state) {
 
   return $form;
 
+}
+
+function remove_emoji($text){
+  return preg_replace('/([0-9#][\x{20E3}])|[\x{00ae}\x{00a9}\x{203C}\x{2047}\x{2048}\x{2049}\x{3030}\x{303D}\x{2139}\x{2122}\x{3297}\x{3299}][\x{FE00}-\x{FEFF}]?|[\x{2190}-\x{21FF}][\x{FE00}-\x{FEFF}]?|[\x{2300}-\x{23FF}][\x{FE00}-\x{FEFF}]?|[\x{2460}-\x{24FF}][\x{FE00}-\x{FEFF}]?|[\x{25A0}-\x{25FF}][\x{FE00}-\x{FEFF}]?|[\x{2600}-\x{27BF}][\x{FE00}-\x{FEFF}]?|[\x{2900}-\x{297F}][\x{FE00}-\x{FEFF}]?|[\x{2B00}-\x{2BF0}][\x{FE00}-\x{FEFF}]?|[\x{1F000}-\x{1F6FF}][\x{FE00}-\x{FEFF}]?/u', '', $text);
 }
