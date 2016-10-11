@@ -45,14 +45,18 @@ function commish_commissioner_reports_views_default_views() {
   $handler->display->display_options['header']['area_text_custom']['label'] = 'Header Text';
   $handler->display->display_options['header']['area_text_custom']['empty'] = TRUE;
   $handler->display->display_options['header']['area_text_custom']['content'] = '<h3>Commissioner Reports</h3>
-<p>Below is a list of your Commissioner Reports. The most recent will appear at the top of the list.</p>
-<p><a href="/node/add/commissioner-report">+ Create New Commissioner Report</a></p>';
+<p>Below is a list of your Commissioner Reports. The most recent will appear at the top of the list.</p>';
+  /* Header: Global: Unfiltered text */
+  $handler->display->display_options['header']['area_text_custom_1']['id'] = 'area_text_custom_1';
+  $handler->display->display_options['header']['area_text_custom_1']['table'] = 'views';
+  $handler->display->display_options['header']['area_text_custom_1']['field'] = 'area_text_custom';
+  $handler->display->display_options['header']['area_text_custom_1']['content'] = '<p><a href="/node/add/commissioner-report">+ Create New Commissioner Report</a></p>';
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
   $handler->display->display_options['empty']['area']['field'] = 'area';
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
-  $handler->display->display_options['empty']['area']['content'] = '<p>You haven\'t created any Commissioner Reports yet. Click <a href="/node/add/commissioner-report">here</a> to create your first one!</p>';
+  $handler->display->display_options['empty']['area']['content'] = '<p>You haven\'t created any Commissioner Reports yet. <a href="/node/add/commissioner-report">Click here to create your first one!</a></p>';
   $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   /* Relationship: OG membership: OG membership from Node */
   $handler->display->display_options['relationships']['og_membership_rel']['id'] = 'og_membership_rel';

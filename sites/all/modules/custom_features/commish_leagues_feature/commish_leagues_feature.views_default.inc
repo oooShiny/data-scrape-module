@@ -517,6 +517,8 @@ function commish_leagues_feature_views_default_views() {
 
   /* Display: View */
   $handler = $view->new_display('block', 'View', 'view_block');
+  $handler->display->display_options['defaults']['access'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
   $handler->display->display_options['defaults']['fields'] = FALSE;
   /* Field: Content: Team ID */
   $handler->display->display_options['fields']['field_team_id']['id'] = 'field_team_id';

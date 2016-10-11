@@ -318,6 +318,45 @@ function commish_leagues_feature_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'field_collection_item-field_historical_stats-field_win_percentage'
+  $field_instances['field_collection_item-field_historical_stats-field_win_percentage'] = array(
+    'bundle' => 'field_historical_stats',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 2,
+          'thousand_separator' => ' ',
+        ),
+        'type' => 'number_decimal',
+        'weight' => 8,
+      ),
+    ),
+    'entity_type' => 'field_collection_item',
+    'field_name' => 'field_win_percentage',
+    'label' => 'Win Percentage',
+    'required' => 0,
+    'settings' => array(
+      'prefix' => '',
+      'read-only' => FALSE,
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => NULL,
+      'settings' => array(),
+      'type' => NULL,
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-game-field_game_away_score'
   $field_instances['node-game-field_game_away_score'] = array(
     'bundle' => 'game',
@@ -598,7 +637,7 @@ function commish_leagues_feature_field_default_field_instances() {
         'label' => 'inline',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 0,
+        'weight' => 1,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -626,6 +665,45 @@ function commish_leagues_feature_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-league-field_league_records'
+  $field_instances['node-league-field_league_records'] = array(
+    'bundle' => 'league',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_league_records',
+    'label' => 'League Records',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 31,
+    ),
+  );
+
   // Exported field_instance: 'node-league-group_group'
   $field_instances['node-league-group_group'] = array(
     'bundle' => 'league',
@@ -641,7 +719,7 @@ function commish_leagues_feature_field_default_field_instances() {
         'label' => 'inline',
         'settings' => array(),
         'type' => 'hidden',
-        'weight' => 1,
+        'weight' => 2,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -769,6 +847,86 @@ function commish_leagues_feature_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-team-field_team_biggest_loss'
+  $field_instances['node-team-field_team_biggest_loss'] = array(
+    'bundle' => 'team',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_team_biggest_loss',
+    'label' => 'Team Biggest Loss',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 17,
+    ),
+  );
+
+  // Exported field_instance: 'node-team-field_team_biggest_win'
+  $field_instances['node-team-field_team_biggest_win'] = array(
+    'bundle' => 'team',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_team_biggest_win',
+    'label' => 'Team Biggest Win',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance: 'node-team-field_team_id'
   $field_instances['node-team-field_team_id'] = array(
     'bundle' => 'team',
@@ -806,6 +964,46 @@ function commish_leagues_feature_field_default_field_instances() {
       'settings' => array(),
       'type' => 'number',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-team-field_team_least_points'
+  $field_instances['node-team-field_team_least_points'] = array(
+    'bundle' => 'team',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_team_least_points',
+    'label' => 'Team Least Points',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 15,
     ),
   );
 
@@ -852,6 +1050,46 @@ function commish_leagues_feature_field_default_field_instances() {
       'settings' => array(),
       'type' => 'number',
       'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-team-field_team_most_points'
+  $field_instances['node-team-field_team_most_points'] = array(
+    'bundle' => 'team',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_team_most_points',
+    'label' => 'Team Most Points',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 14,
     ),
   );
 
@@ -1236,6 +1474,7 @@ function commish_leagues_feature_field_default_field_instances() {
   t('Historical Stats');
   t('Home Score');
   t('Home Team');
+  t('League Records');
   t('Losses');
   t('Owner');
   t('Points Against');
@@ -1243,10 +1482,15 @@ function commish_leagues_feature_field_default_field_instances() {
   t('Ranking');
   t('Season');
   t('Streak');
+  t('Team Biggest Loss');
+  t('Team Biggest Win');
   t('Team ID');
+  t('Team Least Points');
+  t('Team Most Points');
   t('Team Name');
   t('Ties');
   t('To find your league ID, go to your league homepage and look in the URL bar for something like this: http://games.espn.go.com/ffl/history?leagueId=000000. Your league ID will be the 6 or 7-digit number after ?leagueId= (in this case 000000).');
+  t('Win Percentage');
   t('Wins');
   t('Year');
 

@@ -27,35 +27,42 @@ function commish_leagues_feature_quicktabs_default_quicktabs() {
       'type' => 'block',
     ),
     1 => array(
+      'bid' => 'block_delta_4',
+      'hide_title' => 1,
+      'title' => 'League Leaders',
+      'weight' => '-99',
+      'type' => 'block',
+    ),
+    2 => array(
       'vid' => 'og_team_table',
       'display' => 'default',
       'args' => '',
       'title' => 'Current Standings',
-      'weight' => '-99',
-      'type' => 'view',
-    ),
-    2 => array(
-      'vid' => 'historical_standings',
-      'display' => 'default',
-      'args' => '',
-      'title' => 'Overall Standings',
       'weight' => '-98',
       'type' => 'view',
     ),
     3 => array(
-      'vid' => 'league_power_rankings',
-      'display' => 'sort_block',
+      'vid' => 'historical_standings',
+      'display' => 'default',
       'args' => '',
-      'title' => 'Power Rankings',
+      'title' => 'Overall Standings',
       'weight' => '-97',
       'type' => 'view',
     ),
     4 => array(
+      'vid' => 'league_power_rankings',
+      'display' => 'sort_block',
+      'args' => '',
+      'title' => 'Power Rankings',
+      'weight' => '-96',
+      'type' => 'view',
+    ),
+    5 => array(
       'vid' => 'commissioner_report_list',
       'display' => 'default',
       'args' => '',
       'title' => 'Commish Reports',
-      'weight' => '-96',
+      'weight' => '-95',
       'type' => 'view',
     ),
   );
@@ -68,6 +75,7 @@ function commish_leagues_feature_quicktabs_default_quicktabs() {
   t('Commish Reports');
   t('Current Standings');
   t('League Info');
+  t('League Leaders');
   t('Matchup Analysis');
   t('Overall Standings');
   t('Power Rankings');
