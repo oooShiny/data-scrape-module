@@ -773,20 +773,13 @@ function scrape_league_champions($league_id, $years) {
  * Scrape ESPN schedule page to get games
  */
 function data_scrape_get_schedule($league_id, $year, $og_id) {
-  // Check to see if we already have data for this season.
-  $check = db_select('games', 'g')
-    ->fields('g', array('week'))
-    ->condition('g.league', $league_id, '=')
-    ->condition('g.season', $year, '=')
-    ->orderBy('g.week', 'DESC')
-    ->range(0,1)
-    ->execute()
-    ->fetchField();
+  // Remove all the games we already have. We're gonna rebuild them anyway.
+  $num_deleted = db_delete('games')
+    ->condition('league', $league_id)
+    ->condition('season', $year)
+    ->execute();
 
   $curr_week = 0;
-  if ($check !== FALSE) {
-    $curr_week = $check;
-  }
 
   $games = array();
   $url = 'http://games.espn.go.com/ffl/schedule?leagueId='.$league_id.'&seasonId='.$year;
@@ -838,8 +831,6 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
           $home_score = 0;
           $away_score = 0;
         }
-        // Insert or Update data depending on if we found it in the DB already
-        if ($curr_week < $week) {
           // Insert game data into the database directly.
           $nid = db_insert('games')
             ->fields(array(
@@ -852,21 +843,6 @@ function data_scrape_get_schedule($league_id, $year, $og_id) {
               'week'      => $week
             ))
             ->execute();
-        }
-        else {
-          // Update game data in the database directly.
-          db_update('games')
-          ->fields(array(
-            'homescore' => $home_score,
-            'awayscore' => $away_score,
-          ))
-          ->condition('home', $home_id, '=')
-          ->condition('away', $away_id, '=')
-          ->condition('league', $league_id, '=')
-          ->condition('season', $year, '=')
-          ->condition('week', $week, '=')
-          ->execute();
-        }
       }
 //      create_game_node($league_id, $year, $week, $home_id, $away_id, $home_score, $away_score, $og_id);
     }
