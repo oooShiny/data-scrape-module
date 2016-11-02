@@ -604,6 +604,26 @@ function commish_leagues_feature_field_default_field_bases() {
     'type' => 'text',
   );
 
+  // Exported field_base: 'field_team_point_differential'
+  $field_bases['field_team_point_differential'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_team_point_differential',
+    'foreign keys' => array(),
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+      'precision' => 10,
+      'scale' => 2,
+    ),
+    'translatable' => 0,
+    'type' => 'number_decimal',
+  );
+
   // Exported field_base: 'field_team_points_against'
   $field_bases['field_team_points_against'] = array(
     'active' => 1,

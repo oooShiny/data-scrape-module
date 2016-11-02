@@ -575,6 +575,7 @@ function update_teams($league_id, $standings) {
         }
       }
 
+      $point_diff = ($standings[$id]['pf'] - $standings[$id]['pa']);
       // Updating Team info (name, owner).
       $team->title->set($standings[$id]['name']);
       $team->field_team_owner->set($standings[$id]['owner']);
@@ -586,6 +587,7 @@ function update_teams($league_id, $standings) {
       $team->field_team_points_for->set($standings[$id]['pf']);
       $team->field_team_points_against->set($standings[$id]['pa']);
       $team->field_team_streak->set($standings[$id]['streak']);
+      $team->field_team_point_differential->set($point_diff);
       // Updating Milestones
       $team->field_team_most_points->set($high_score_text);
       $team->field_team_least_points->set($low_score_text);

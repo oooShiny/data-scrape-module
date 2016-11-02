@@ -1015,6 +1015,7 @@ function commish_leagues_feature_views_default_views() {
     'field_team_ties' => 'field_team_ties',
     'field_team_points_for' => 'field_team_points_for',
     'field_team_points_against' => 'field_team_points_against',
+    'field_team_point_differential' => 'field_team_point_differential',
   );
   $handler->display->display_options['style_options']['default'] = 'field_team_wins';
   $handler->display->display_options['style_options']['info'] = array(
@@ -1070,6 +1071,13 @@ function commish_leagues_feature_views_default_views() {
     'field_team_points_against' => array(
       'sortable' => 1,
       'default_sort_order' => 'desc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'field_team_point_differential' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
@@ -1149,6 +1157,16 @@ function commish_leagues_feature_views_default_views() {
   $handler->display->display_options['fields']['field_team_points_against']['table'] = 'field_data_field_team_points_against';
   $handler->display->display_options['fields']['field_team_points_against']['field'] = 'field_team_points_against';
   $handler->display->display_options['fields']['field_team_points_against']['settings'] = array(
+    'thousand_separator' => ',',
+    'decimal_separator' => '.',
+    'scale' => '0',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: Point Differential */
+  $handler->display->display_options['fields']['field_team_point_differential']['id'] = 'field_team_point_differential';
+  $handler->display->display_options['fields']['field_team_point_differential']['table'] = 'field_data_field_team_point_differential';
+  $handler->display->display_options['fields']['field_team_point_differential']['field'] = 'field_team_point_differential';
+  $handler->display->display_options['fields']['field_team_point_differential']['settings'] = array(
     'thousand_separator' => ',',
     'decimal_separator' => '.',
     'scale' => '0',
