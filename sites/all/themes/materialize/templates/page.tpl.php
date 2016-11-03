@@ -100,7 +100,7 @@
   <div class="container">
     <div class="row">
       <div class="col l6 s6">
-        <p class="grey-text text-lighten-4">Like it enough to part with a couple of bucks? <br><a href="/donate" class="btn">Donate!</a></p>
+        <p class="grey-text text-lighten-4">Like it enough to part with a couple of bucks? <br><a href="https://paypal.me/arbrown83" target="_blank" class="btn">Donate!</a></p>
       </div>
       <div class="col l6 s6">
         <p class="grey-text text-lighten-4">All product and company names are trademarks or registered trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them. In other words, I made this by myself.</p>
